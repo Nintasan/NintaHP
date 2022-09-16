@@ -1,0 +1,96 @@
+<!DOCTYPE html> 
+<html lang="ja">
+<head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167854734-1"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-167854734-1');
+	</script>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<title>AnimazeでのLive2Dアバターの使い方</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon">
+	<style>
+	body{font-family: "游ゴシック","arial unicode ms",sans-serif;}
+	</style>
+	<link href="css/style.css"type="text/css"rel="stylesheet">
+	<script type="text/javascript"src="js/ninta.js"></script>
+</head>
+<body>
+	<header>
+        <div class="TitleAndIcon">
+		<img class="float_left" src="images/nintaicon.png">
+        <p class="Title">ニンタ/キャラデザ</p>
+        </div>
+        <div class="clear"></div>
+		<nav>
+		<ul>
+		<li><a href="index.html">ホーム</a></li>
+		<li><a target="_blank"href="https://www.pixiv.net/users/43235147">PIXIV</a></li>
+		<li><a target="_blank"href="https://profile.coconala.com/users/1660300">ココナラで依頼</a></li>
+		<li><a href="VtuberMaking.html">Vtuberやり方・作り方</a></li>
+		</ul>
+		</nav>
+	</header>
+    <main>
+        <h2>Live2DアバターをAnimazeで使う方法</h2>
+         <div class="contents">
+         <p>目次</p>
+         <ul>
+             <li><a class="ContentsText" href="#0">はじめに</a></li>
+             <li><a class="ContentsText" href="#1">AnimazePC版で使えるLive2Dアバターの種類</a></li>
+             <li><a class="ContentsText" href="#2">AmimazeにLive2Dアバターをインポートする方法</a></li>
+             <li><a class="ContentsText" href="#3">Animaze上でのアバター位置変更</a></li>
+             <li><a class="ContentsText" href="#4">インポートされたアバターの確認</a></li>
+             <li><a class="ContentsText" href="#5">アバターの解像度の上げ方</a></li>
+              <li><a class="ContentsText" href="#6">Animazeでのキー入力方法</a></li>
+         </ul>
+         </div>
+        <div class="chapterType1">
+        <h3 id="#0">はじめに</h3>
+            <p>2020年11月17日にFaceRigの後継版であるAnimazeがリリースされました。</p><p>Animazeはトラッキング技術の向上に加えて、Live2D moduleを加えなくても元からLive2Dアバターを使用できるというVtuber配信者に優しいツールになっています。</p><p>今回はAmimazePC版でカスタムLive2Dアバターを使う方法について説明したいと思います。</p>
+        <h3 id="1">AnimazePC版で使えるLive2Dアバターの種類</h3>
+            <p>Anomazeにインポートできるアバターは2種類あります</p>
+            <ul>
+                <li>Live2D cubismで作成したそのままのアバター(ファイル拡張子：.model3.json)</li>
+                <li>Animaze Editorで編集したアバター(ファイル名拡張子：.avatar)</li>
+            </ul>
+            <p>.model3.jsonファイルのLive2Dアバターについて</p>
+            <p>Animazeでこの形式のLive2Dアバターを使用する場合、Live2DアバターはLive2D Cubism Editorバージョン3.0以上で作成されたものである必要があります。</p><p>バージョン3.0は2017年の春にリリースされたため、それ以降のほとんどの方のLive2Dアバターは問題なく使用することができます。また、バージョン3.0以前のアバターも処理を加えることでAnimaze上で使用できるようになります。</p>
+            <p>.avatarファイルのLive2Dアバターについて</p>
+            <p>この形式のアバターは、ボタン入力で特殊モーションやポーズをAnimaze上で使用できます。Animaze Editorでの編集が必要です。</p>
+        <h3 id="2">AmimazeにLive2Dアバターをインポートする方法</h3>
+            <p>AnimazeにLive2Dアバターをインポートするには、Animaze画面上部のメニューバーのインポートをクリックして、Live2Dアバターのインポートを選択します。</p>
+            <p>最初にカスタムアバターをインポートするには、月額課金をせずにアバター1体につき$0.99払うか、月額課金をしてインポートし放題にしてからインポートする必要があります。</p>
+            <p>支払いが完了してから、またメニューバーのLive2Dアバターのインポートを選択するとPC内のフォルダが表示されるので、自分にLive2Dアバターの場所を探し、「アバター名model3.json」を選択します。</p><p>これだけでLive2Dアバターののインポートは完了です。</p>
+            <p>また、Animaze専用のアバター(アバター名.avatarファイル)をAnimazeへインポートするには上部のメニューバーの「インポート」から「アバターをインポートする」からアバターをインポートしてください。
+        <h3 id="3">Animaze上でのアバター位置変更</h3>
+            <p>Live2Dアバターをインポートしても画面にアバターが映らない場合、カメラワークからアバターから外れていて見えなくなっている可能性があります。</p><p>キーボード入力で位置を動かしてカメラワークを調整しましょう。</p>
+<ul>
+    <li>マウスホイール：アバターの前後移動</li>
+    <li>ctrl +右クリック ：アバターの上下左右移動</li>
+            </ul>
+            <h3 id="4">インポートされたアバターの確認</h3>
+            <p>今までにAnimazeへインポートされたアバターを確認するためには、Animazeの画面下のアバターをクリックし、すべてのアバターを選択するとインポートしたアバターを確認することができます。</p>
+    <h3 id="5">Live2Dアバターの画質を上げる方法</h3>
+        <p>AnimazeでLive2Dアバターを拡大して表示したときに画質が荒くなってしまうことがあります。そこで、Live2Dアバターの画質を上げるには次のような方法があります。</p>
+        <p>メニューバーのAnimazeボタンをクリックし、一番下の設定を選択します。</p><p>さらに、設定内の項目の動画のグラフィックを選択して2Dアバターのレンダースケールというバーを最大まで動かすと高画質で表示されます。</p>
+    <h3 id="6">Animazeでのキー入力方法</h3>
+            <p>Animazeでのキー入力ポーズ、アクションが可能なアバターは「.avatar」形式ファイルです。この形式のファイルはLive2D cubismで作成したファイルをAnimaze Editorで編集したもののことを指します。</p>
+            <p>「.avatar」ファイルをインポートした後、Animaze画面下部の「アニメーション」を選択すると人型のアイコンとスイッチのアイコン（スイッチのアイコンはカーソルを下に移動しないと見えない場合があります）が表示されます。</p>
+            <p>アイコンにカーソルを合わせてクリックすると設定されたモーションとアクションが開始されます。また、キーボードのQWEと続く横の列のキーを押してもモーションが開始されます。</p>
+    </div>
+    
+    </main>
+    <footer>
+	<p>ご連絡</p>
+	<p>E-mail : ninta.illustration@gmail.com</p>
+	<p>Twitter : <a target="_blank"href="https://twitter.com/ninta_mk3">@ninta_Mk3</a></p>
+	</footer>
+</body>
+</html>
