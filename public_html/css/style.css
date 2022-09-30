@@ -386,11 +386,23 @@ ID_3{
 /*==================================================
 スライダーのためのcss
 ===================================*/
+.wrapper{
+	width: 100%;
+	padding-bottom: 10%;
+}
 .slider {
     position:relative;
 	z-index: 1;
 	/*↑z-indexの値をh1のz-indexの値よりも小さくして背景に回す*/
-	height: 100vh;/*スライダー全体の縦幅を画面の高さいっぱい（100vh）にする*/
+	width: 100%;
+	height: auto;
+	max-width: 1000px;
+	top:  0;                     /* 位置指定 */
+	bottom:  0;                  /* 位置指定 */
+	left:  0;                    /* 位置指定 */
+	right:  0;                   /* 位置指定 */
+	margin:  auto; 
+
 }
 /*　背景画像設定　*/
 
@@ -404,6 +416,38 @@ ID_3{
 
 .slider-item03 {
     background:url(../img/img_03.jpg);
+}
+
+.slider-item04 {
+    background:url(../img/img_04.jpg);
+}
+
+.slider-item05 {
+    background:url(../img/img_05.jpg);
+}
+
+.slider-item06 {
+    background:url(../img/img_06.jpg);
+}
+
+.slider-item07 {
+    background:url(../img/img_07.jpg);
+}
+
+.slider-item08 {
+    background:url(../img/img_08.jpg);
+}
+
+.slider-item09 {
+    background:url(../img/img_09.jpg);
+}
+
+.slider-item09 {
+    background:url(../img/img_09.jpg);
+}
+
+.slider-item10 {
+    background:url(../img/img_10.jpg);
 }
 
 .slider-item {
@@ -447,6 +491,7 @@ ID_3{
 	z-index: 3;
     text-align:center;
 	margin:-50px 0 0 0;
+	padding-top: 50px;
 }
 
 .slick-dots li {
