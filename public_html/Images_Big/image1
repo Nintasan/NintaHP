@@ -1,0 +1,31 @@
+<!DOCTYPE html> 
+<html lang="ja">
+<head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167854734-1"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-167854734-1');
+	</script>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<title>ゲーム、Vtuberキャラデザ・Live2Dモデリング依頼【イラストレーター：ニンタ】</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon">
+	<style>
+	body{font-family: "游ゴシック","arial unicode ms",sans-serif;}
+	</style>
+	<link href="css/style.css"type="text/css"rel="stylesheet">
+	<script type="text/javascript"src="js/ninta.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/css/lightbox.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/js/lightbox.min.js" type="text/javascript"></script>
+
+</head>
+<body>
+
+</body>
+</html>
