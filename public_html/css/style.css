@@ -196,7 +196,7 @@ html{overflow-x:hidden;}
 	bottom:  0;                  /* 位置指定 */
 	left:  0;                    /* 位置指定 */
 	right:  0;                   /* 位置指定 */
-	margin:  auto; 
+	margin: 0 auto; 
 
 }
 /*　背景画像設定　*/
@@ -400,7 +400,7 @@ nav li a:hover{
 	bottom:  0;                  /* 位置指定 */
 	left:  0;                    /* 位置指定 */
 	right:  0;                   /* 位置指定 */
-	margin:  auto; 
+	margin: 0 auto; 
 
 }
 /*　背景画像設定　*/
