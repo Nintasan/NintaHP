@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+    <h1>Contact</h1>
+    <div class="chapterType1">
+        <h1 id="1">お見積り・ご連絡/Quotation</h1>
+        <p>If you are interested in request of making a VTuber, please contact me with filling out form!<br>Vtuber作成、キャラデザの依頼や質問があればお気軽にご相談ください！<br>
+        メールフォームの下にご依頼方法と値段表を記入してあります。</p>
+        <p>VTuber用イラスト作成 ~35,000円<br>Designing VTuber art 300usd<br>
+        イラストパーツ分け ~15,000円 <br>Making a psd ready for Live2D rigging 200usd<br>
+        Live2Dモデリング ~150,000円 <br> Live2D rigging 1200usd
+        </p>
+        <form class="mailForm" action=mail.php method="post">
+            <dl>
+              <dt>お名前/Name</dt>
+              <dd>
+                <input name="name" type="text" required="required" id="name">
+              </dd>
+              <dt>メールアドレス/your Email address</dt>
+              <dd>
+                <input name="email" type="email" required="required" id="email">
+              </dd>
+              <dt>ご依頼の概要/ Request contents</dt>
+              <dd>
+                <textarea name="content" required="required" id="content"></textarea>
+              </dd>
+              <input type="hidden" id="token" name="token" value="1234567" />
+            </dl>
+            <p class="center" id="submit_button_cover">
+                <input name="submit_buton" type="submit" id="submit_button" value="送信/post" class="button2">
+            </p>
+               </form>
+    </div>
+
+<div class="clear"></div>
+
+<div class="chapterType1">
+<h2>Live2D料金表と概要</h2>
+    <div class="wrapper">
+    <h2>VTuber作成工程</h2>
+    <ul class="slider">
+        <li class="slider-item slider-item01">
+        <div class="FigSlide2Big"><a href="images/説明1.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明1.png"></a></div>
+    </li>
+    <li class="slider-item slider-item02">
+    <div class="FigSlide2Big"><a href="images/説明2.png" data-lightbox="group">
+        <img class="FigSlide2" src="images/説明2.png"></a></div>
+    </li>
+        <li class="slider-item slider-item03">
+        <div class="FigSlide2Big"><a href="images/説明3.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明3.png"></a></div>
+    </li>
+    <li class="slider-item slider-item04">
+        <div class="FigSlide2Big"><a href="images/説明4.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明4.png"></a></div>
+    </li>
+    <li class="slider-item slider-item05">
+        <div class="FigSlide2Big"><a href="images/説明5.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明5.png"></a></div>
+    </li>
+    <li class="slider-item slider-item06">
+        <div class="FigSlide2Big"><a href="images/説明6.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明6.png"></a></div>
+    </li>
+    <li class="slider-item slider-item07">
+        <div class="FigSlide2Big"><a href="images/説明7.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明7.png"></a></div>
+    </li>
+    <li class="slider-item slider-item08">
+        <div class="FigSlide2Big"><a href="images/説明8.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明8.png"></a></div>
+    </li>
+    <li class="slider-item slider-item09">
+        <div class="FigSlide2Big"><a href="images/説明9.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明9.png"></a></div>
+    </li>
+    <li class="slider-item slider-item10">
+        <div class="FigSlide2Big"><a href="images/説明10.png" data-lightbox="group">
+            <img class="FigSlide2" src="images/説明10.png"></a></div>
+    </li>
+    </ul>
+
+    <!--/wrapper--></div>
+    <div class="clear"></div>
+</div>
+
+
+<h2 id="2">イラストに関するお問い合わせ概要</h2>     
+<div class="chapterType1">
+
+<p>お問い合わせの際には、以下の項目にて、お仕事の概要をお伝えいただけますと幸いです。<br>
+↓コピペしてお使いください。<br> 
+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−<br>
+▽ご依頼内容<br>
+▽使用用途媒体<br>
+▽タッチ（何か参考画像等があれば分かりやすいですが、無くても大丈夫です）<br>
+▽原稿サイズ、点数<br>
+▽ご予算・原稿料の金額<br>
+▽ご希望納期<br>
+▽請求書は必要ですか（はい・いいえ）　必要な場合、請求先と請求書〆切日<br>
+▽実績として公開することは可能でしょうか？<br>
+（OK・NG・条件付きでOKの場合は条件を記載ください）<br>
+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−<br>
+メールを確認後、できる限り迅速に返信いたします。<br>
+3日経過しても返信が無い場合はお手数ですが再度ご連絡ください。<br>
+複雑な内容の場合は、お電話やZOOM、Google meetなどでのお打ち合わせも可能です。<br>
+＊入金は前払いでお願いいたします。銀行振り込みとPayPal入金が可能です。<br>
+＊契約書がある場合は、なるべく最初のご連絡の際にご呈示いただけますと幸いです。納品後の契約書提示はトラブルの元となりますのでご遠慮ください。<br>
+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−</p>
+</div>
+<h2>VTuber, Live２Dに関するお問い合わせ概要</h2>
+<div class="chapterType1">
+
+ <p>VTuber,Live2Dに関する問い合わせの際には、以下の項目にて、お仕事の概要をお伝えいただけますと幸いです。<br>
+↓コピペしてお使いください。<br> 
+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−<br>
+▽ご依頼内容<br>
+▽使用用途媒体<br>
+▽タッチ（何か参考画像等があれば分かりやすいですが、無くても大丈夫です）<br>
+▽Live2Dモデリングプラン(下記参照)<br>
+▽ご予算金額<br>
+▽ご希望納期<br>
+▽請求書は必要ですか（はい・いいえ）　必要な場合、請求先と請求書〆切日<br>
+▽実績として公開することは可能でしょうか？<br>
+（OK・NG・条件付きでOKの場合は条件を記載ください）<br>
+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−<br>
+メールを確認後、できる限り迅速に返信いたします。<br>
+3日経過しても返信が無い場合はお手数ですが再度ご連絡ください。<br>
+複雑な内容の場合は、お電話やZOOM、Google meetなどでのお打ち合わせも可能です。<br>
+＊入金は前払いでお願いいたします。銀行振り込みとPayPal入金が可能です。<br>
+＊契約書がある場合は、なるべく最初のご連絡の際にご呈示いただけますと幸いです。納品後の契約書提示はトラブルの元となりますのでご遠慮ください。<br>
+−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−</p>
+<p>Vtuber用のキャラクターデザインの詳細が決まっている場合は下記の質問にご回答ください。</p>
+<ol>
+<li>名前</li>
+<li>性別</li>
+<li>髪型・色</li>
+<li>目の形・瞳の色</li>
+<li>体型</li>
+<li>服装</li>
+<li>メインカラー</li>
+<li>モチーフ（動物や職業など）</li>
+<li>特徴的なアイテム</li>
+<li>性格</li>
+</ol>
+<p>また、イメージに近いアニメ、ゲームキャラの画像を頂けるとより作成がしやすいです！</p>
+
+</div>
+<div class="clear"></div>
+
+ <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+ <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+ <!--自作のJS-->
+ <script src="JS/ninta.js"></script>
+</main>
+{% endblock %}
