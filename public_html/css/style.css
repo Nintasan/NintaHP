@@ -41,6 +41,15 @@ body{
 	border-radius:10px;
 }
 
+.chapterType4{
+	text-align: center;
+	background-color:white;
+	width:95%;
+	padding:10px;
+	margin:10px auto;
+	position:relative;
+	border-radius:10px;
+}
 .chapterType3{
 	background-color:white;
 	width:40%;
@@ -69,16 +78,6 @@ body{
 }
 /*目次end*/
 /*リンク作成*/
-.chapterType2{
-	background-color:white;
-	width:95%;
-	padding:5px;
-	margin:10px auto;
-	position:relative;
-	border-radius:10px;
-    border: 5px solid lightblue;
-    box-shadow: 4px 6px gray;
-	}
 .LinkText{
     float:left;
     margin-left: 15px;
@@ -112,6 +111,8 @@ height: 100%;
     font-size: 16pt;        /* 文字サイズ */
     font-weight: bold;
 }
+
+
 .bury{
     border: 1px solid #ddd;
     border-radius:5px;
