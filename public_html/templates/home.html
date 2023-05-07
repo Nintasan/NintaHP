@@ -24,16 +24,21 @@
          <div class="chapterType2">
             <a class="button" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');">お見積り・ご連絡 / Quate</a>
             <div id="layer_折りたたみA" style="display: none;position:relative;margin-left:15pt" class="close">
-                <h1 id="1">お見積り・ご連絡/Contact</h1>
-                <p>If you are interested in request of making a VTuber, please contact me with filling out form!<br>
-		Vtuber作成、キャラデザの依頼や質問があればお気軽にご相談ください！<br>
-                <p>VTuber用イラスト作成 ~35,000円<br>
-		Designing VTuber art 300usd<br>
-                    イラストパーツ分け~20,000円<br>
-		Making a psd ready for Live2D rigging 200usd<br>
-                    Live2Dモデリング~150,000円<br>
-		Live2D rigging 1200usd
+            {% if content %}
+            <p>
+                {% for contenttext in content %}
+                    {{contenttext[2]}}<br>
+                {%endfor%}
+            </p>
+            {% else %}
+                <h1 id="1">お見積り・ご連絡/Quotation</h1>
+                <p>If you are interested in request of making a VTuber, please contact me with filling out form!<br>Vtuber作成、キャラデザの依頼や質問があればお気軽にご相談ください！<br>
+                メールフォームの下にご依頼方法と値段表を記入してあります。</p>
+                <p>VTuber用イラスト作成 ~35,000円<br>Designing VTuber art 300usd<br>
+                イラストパーツ分け ~15,000円 <br>Making a psd ready for Live2D rigging 200usd<br>
+                Live2Dモデリング ~150,000円 <br> Live2D rigging 1200usd
                 </p>
+            {% endif %}
                 <form class="mailForm" action=mail.php method="post">
                     <dl>
                       <dt>お名前/Name</dt>

@@ -3,6 +3,36 @@
 <main>
 	<div class="chapterType1">
 	<h1>editpage</h1>
+	<form action="{{ url_for('editnintahpsend') }}" method="post">
+		<div>
+		  <label for="name">name</label><br>
+		  <input type="text" name="name" id="name" required>
+		</div>
+		<div>
+		  <label for="content">content</label><br>
+		  <textarea type="text" name="content" rows="10" cols="40" id="content"></textarea><br>
+		</div>
+		<input type="submit" value="送信">
+	  </form>
 	</div>
+
+	<div class="chapterType1">
+		<h1>updatepage</h1>
+		<form action="{{ url_for('editnintahpedit') }}" method="post">
+			<div>
+				<label for="id">id</label><br>
+				<input  type="number" name="id" id="id" required>
+			  </div>
+			<div>
+			  <label for="name">name</label><br>
+			  <input  type="text/html" name="name" id="name" required>
+			</div>
+			<div>
+			  <label for="content">content</label><br>
+			  <textarea  type="text/html" name="content" rows="10" cols="40" id="content"></textarea><br>
+			</div>
+			<input type="submit" value="送信">
+		  </form>
+		</div>
 </main>
 {% endblock %}
