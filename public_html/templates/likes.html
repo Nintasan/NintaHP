@@ -1,0 +1,26 @@
+
+
+<script>
+    $(function() {
+      $('#likeform{{ postlikes[0] }}').on('submit',function(event){
+        event.preventDefault();
+        var id = $('#ajaxlikes{{ postlikes[0] }}').val();
+        $.ajax({
+          type : 'POST',
+          url : '/likes',
+          dataType: 'html',
+          data:{ id: id },
+        })
+
+        .done(function(data){
+          $('#likeareas{{ postlikes[0] }}').html(data);
+        });
+      });
+    });
+</script>
+
+<form class="float_left" id ="likeform{{ postlikes[0] }}" >
+    <input type="hidden" value="{{ postlikes[0] }}" id = 'ajaxlikes{{ postlikes[0] }}'>
+    <input type="submit" value="likes">
+</form>
+<div class="float_left">{{postlikes[5]}}</div>

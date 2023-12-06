@@ -1,0 +1,35 @@
+
+<script>
+    $(function() {
+      $('#optionform').on('submit',function(event){
+        event.preventDefault();
+        var options = $('#ajaxoptions').val();
+        $.ajax({
+          type : 'POST',
+          url : '/selectoption',
+          dataType: 'json',
+          contentType: 'application/json',
+          data : JSON.stringify({ array : options})
+        })
+
+        .done(function(data){
+          $('#optionarea').html(data);
+        });
+      });
+    });
+</script>
+
+<form id = "optionform">
+    <p>Choose options you want to add</p>
+    {% for option in options %}
+        <label id="{{option[0]}}">
+            <input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} : JPY{{option[3]}} / USD{{option[4]}}
+        </label>
+    {% endfor %}
+    <p><input type="submit" value="send" id = "ajaxoptions"></p>
+</form>
+
+<div id="optionarea">
+</div>
+
+

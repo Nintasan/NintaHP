@@ -1,0 +1,32 @@
+{% include "areacontents.html" %}
+
+
+<div id="contentareas{{ count }}">
+
+  <script>
+    $(function() {
+      $('#contentform{{ count }}').on('submit',function(event){
+      event.preventDefault();
+      var contents = $('#ajaxcontents{{ count }}').val();
+      $.ajax({
+        type : 'POST',
+        url : '/newcontents',
+        dataType: 'html',
+        data:{ contents: contents },
+      })
+
+      .done(function(data){
+        $('#contentareas{{ count }}').html(data);
+      });
+      });
+    });
+  </script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<form id ="contentform{{ count }}" >
+	<input type="hidden" value="{{ count }}" id = 'ajaxcontents{{ count }}'>
+	<input class="button3" type="submit" value="more contents">
+</form>
+</form>
+</div>

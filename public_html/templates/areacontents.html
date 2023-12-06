@@ -1,0 +1,99 @@
+<ul class="gallerry-contents">	
+    {% for post in posts%}
+    <li>
+    <div class = fig2>
+            <h3>{{ post[3] }}</h3>
+        {% if 'twitter.com' in post[4] %}
+          <blockquote class="twitter-tweet">
+            <a href="{{ post[4] }}"></a>
+        </blockquote>
+
+        {% elif 'www.youtube.com/embed/' in post[4] %}
+
+        <iframe class="youtube" src="{{ post[4] }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+        {% else %}
+        <div class="chapterType1">
+            <p> not youtube or x posts</p>
+        </div>
+
+        {% endif%}
+
+        <div>
+            
+            <div class="clear_both">
+                    {% if userid == 0 %}
+                        <a class="button" href= "{{ url_for('login.login') }}">Login</a>
+                        <div class="float_left">likes:{{post[5]}}</div>
+                        
+                        {% include "tagareaNotlogin.html" %}
+
+                    {% else %}
+                    <div id="likeareas{{ post[0] }}">
+                        {% if post[7] == 1  %}
+                        
+                        <script>
+                            $(function() {
+                            $('#unlikeform{{ post[0] }}').on('submit',function(event){
+                                event.preventDefault();
+                                var id = $('#ajaxunlikes{{ post[0] }}').val();
+                                $.ajax({
+                                type : 'POST',
+                                url : '/unlikes',
+                                dataType: 'html',
+                                data:{ id: id },
+                                })
+                
+                                .done(function(data){
+                                $('#likeareas{{ post[0] }}').html(data);
+                                });
+                            });
+                            });
+                        </script>
+
+                        
+                        <form class="float_left" id ="unlikeform{{ post[0] }}" >
+                            <input type="hidden" value="{{ post[0] }}" id = 'ajaxunlikes{{ post[0] }}'>
+                            <button type="submit">unlikes</button>
+                        </form>
+                        <div class="float_left">{{post[5]}}</div>
+                        {% else %}
+
+                        <script>
+                            $(function() {
+                            $('#likeform{{ post[0] }}').on('submit',function(event){
+                                event.preventDefault();
+                                var id = $('#ajaxlikes{{ post[0] }}').val();
+                                $.ajax({
+                                type : 'POST',
+                                url : '/likes',
+                                dataType: 'html',
+                                data:{ id: id },
+                                })
+                
+                                .done(function(data){
+                                $('#likeareas{{ post[0] }}').html(data);
+                                });
+                            });
+                            });
+                        </script>
+
+                        <form class="float_left" id ="likeform{{ post[0] }}" >
+                            <input type="hidden" value="{{ post[0] }}" id = 'ajaxlikes{{ post[0] }}'>
+                            <input type="submit" value="likes">
+                        </form>
+                        <div class="float_left">{{post[5]}}</div>
+                        {% endif %}
+                    </div>
+            </div>
+
+        {% include "tagarea.html" %}
+            {% endif %}
+
+        </div>
+    
+        <div class="clear"></div>
+    </div>
+    </li>
+    {% endfor %}
+</ul>

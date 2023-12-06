@@ -1,0 +1,43 @@
+<div id = "tagarea{{ post[0] }}">
+    <script>
+        $(function() {
+        $('#tagform{{ post[0] }}').on('submit',function(event){
+            event.preventDefault();
+            var tag = $('#ajaxtag{{ post[0] }}').val();
+            var postid = $('#ajaxpost{{ post[0] }}').val();
+            $.ajax({
+            type : 'POST',
+            url : '/tags',
+            dataType: 'html',
+            data:{ tag: tag, postid: postid },
+            })
+
+            .done(function(data){
+            $('#tagarea{{ post[0] }}').html(data);
+            });
+        });
+        });
+    </script>
+
+    <form id="tagform{{ post[0] }}">
+        <div>
+            <label for="tags">Tags</label>
+            <select name="tag" id = "ajaxtag{{ post[0] }}">
+                {% for tag in tags %}
+                <option value="{{tag[3]}}">{{tag[3]}}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" value="{{ post[0] }}" id = 'ajaxpost{{ post[0] }}'>
+            <input type="submit" value="add tags">
+        </div>
+    </form>
+
+    <div class="clear_both">
+        <div class="float_left"><p>tags:</p></div>
+        {% for tagbox2 in tagbox %}
+            {% if tagbox2[1] == post[0] %}
+                    <div class="float_left"> <p>{{ tagbox2[3] }}</p> </div> 
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

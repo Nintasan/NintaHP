@@ -1,0 +1,25 @@
+<script>
+    $(function() {
+      $('#unlikeform{{ postunlikes[0] }}').on('submit',function(event){
+        event.preventDefault();
+        var id = $('#ajaxunlikes{{ postunlikes[0] }}').val();
+        $.ajax({
+          type : 'POST',
+          url : '/unlikes',
+          dataType: 'html',
+          data:{ id: id },
+        })
+
+        .done(function(data){
+          $('#likeareas{{ postunlikes[0] }}').html(data);
+        });
+      });
+    });
+  </script>
+
+
+<form class="float_left" id ="unlikeform{{ postunlikes[0] }}" >
+    <input type="hidden" value="{{ postunlikes[0] }}" id = 'ajaxunlikes{{ postunlikes[0] }}'>
+    <button type="submit">unlikes</button>
+</form>
+<div class="float_left">{{ postunlikes[5] }}</div>

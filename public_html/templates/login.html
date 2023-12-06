@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main>
+	<div class="chapterType1">
+<h1>Login</h1>
+<form action="{{ url_for('login.access') }}" method="post">
+  <div>
+    <label for="user">username</label><br>
+    <input type="text" name="username" id="user" required>
+  </div>
+  <div>
+    <label for="pass">password</label><br>
+    <input type='password' name="password" id="pass" required minlength="4">
+  </div>
+  <button>send</button>
+</form>
+</div>			
+</main>
+{% endblock %}

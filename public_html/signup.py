@@ -2,19 +2,16 @@ import sqlite3
 from flask import Flask , render_template , request , g , redirect , url_for , session 
 from flask import Blueprint
 from werkzeug.security import check_password_hash, generate_password_hash
+from db import UpdatePosts
+from db import get_db
 
 bp_signup = Blueprint('user', __name__)
 
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect('vtubedockdata.db')
-    return g.db
-
-@bp.route('/signup')
+@bp_signup.route('/signup')
 def signup():
     return render_template('signup.html', title = 'Live2DTree signup')
 
-@bp.route('/register', methods=['POST'])
+@bp_signup.route('/register', methods=['POST'])
 def register():
         username = request.form['username']
         password = request.form['password']

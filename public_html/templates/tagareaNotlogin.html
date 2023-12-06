@@ -1,0 +1,8 @@
+<div class="clear_both">
+    <div class="float_left"><p>tags:</p></div>
+    {% for tagbox2 in tagbox %}
+        {% if tagbox2[1] == post[0] %}
+                <div class="float_left"><p> {{ tagbox2[3] }} </p> </div> 
+        {% endif %}
+    {% endfor %}
+</div>

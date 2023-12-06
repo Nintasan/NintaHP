@@ -1,16 +1,12 @@
 import sqlite3
 from flask import Flask , render_template , request , g , redirect , url_for , session, flash, current_app
 from flask import Blueprint
-from .app import UpdatePosts
+from db import UpdatePosts
+from db import get_db
 
 
 
 bp_tag = Blueprint('tag', __name__)
-
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect('vtubedockdata.db')
-    return g.db
 
 @bp_tag.route('/selecttag', methods=['POST'])
 def selecttag():

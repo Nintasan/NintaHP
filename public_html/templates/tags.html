@@ -1,0 +1,41 @@
+
+    <script>
+        $(function() {
+        $('#tagform{{ postid0 }}').on('submit',function(event){
+            event.preventDefault();
+            var tag = $('#ajaxtag{{ postid0 }}').val();
+            var postid = $('#ajaxpost{{ postid0 }}').val();
+            $.ajax({
+            type : 'POST',
+            url : '/tags',
+            dataType: 'html',
+            data:{ tag: tag, postid: postid },
+            })
+
+            .done(function(data){
+            $('#tagarea{{ postid0 }}').html(data);
+            });
+        });
+        });
+    </script>
+
+    <form id="tagform{{ postid0 }}">
+        <div>
+            <label for="tags">Tags</label>
+            <select name="tag" id = "ajaxtag{{ postid0 }}">
+                {% for tag in tags %}
+                <option value="{{tag[3]}}">{{tag[3]}}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" value="{{ postid0 }}" id = 'ajaxpost{{ postid0 }}'>
+            <input type="submit" value="add tags">
+        </div>
+    </form>
+
+
+    <div class="clear_both">
+        {% for tagbox2 in tagbox %}
+                <div class="float_left"> {{ tagbox2[3] }} </div> 
+        {% endfor %}
+    </div>
+    

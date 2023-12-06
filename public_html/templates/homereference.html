@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <main>
-	<div class="chapterType2">
-		<h1>Home</h1>
-    	<img class="fig1" src="images/icon2.png">
+	<h1>Home</h1>
+	<div class="chapterType1">	
+	<div>
+		<img class="fig1" src="images/icon2.png">
         <h1>Name: ニンタ(Ninta)</h1>
         <h3>I can take some commissions to design character art, rig Live2D avatar, channel art, icon and so on!<br>キャラクターデザイン、Live2Dモデリング、イラスト作成のご依頼お受けします。ご依頼の詳細はContactから。</h3>
 
@@ -12,78 +13,12 @@
         <a class="button" href="https://twitter.com/ninta_mk3">Twitter</a>
         <a class="button" href="https://www.pixiv.net/users/43235147">Pixiv</a>
         <a class="button" href="https://www.twitch.tv/ninta_live2d">Twitch</a>
-		<a class="button" href="https://www.youtube.com/@nintaArtLive2D">YouTube</a>
+	<a class="button" href="https://www.youtube.com/@nintaArtLive2D">YouTube</a>
+    
+    <div class="clear"></div>
+    </div>
 
-		
-		{% if userid != 0 %}
-		
-			<h2>Upload Live2D Tweet!</h2>
-			<p>
-				<form action="{{ url_for('userpage.submission') }}" method="post">
-					<div>
-					<label for="title1">title</label><br>
-					<input type="text" name="title" id="title" required>
-					</div>
-					<div>
-					<label for="post1">post from X or YouTube</label><br>
-					<input type='text' name="post" id="post" required minlength="4">
-					</div>
-					<button>post</button>
-				</form>
-			</p>
-
-
-			
-			<h2>Creat new category tags</h2>
-				<form action="{{ url_for('tag.createtag') }}" method="post">
-					<div>
-					<label for="post1">Newtag</label><br>
-					<input type='text' name="newtag" id="newtag" required minlength="1">
-					</div>
-					<button>post</button>
-				</form>
-
-				{% with messages = get_flashed_messages() %}
-					{% if messages %}
-						<ul class="flash">
-						{% for message in messages %}
-							<li>{{ message }}</li>
-						{% endfor %}
-						</ul>
-					{% endif %}
-				{% endwith %}
-			
-			<h2>Add options</h2>
-				<p>
-					<form action="{{ url_for('option.option') }}" method="post">
-						<div>
-							<label for="namejp">JPname</label><br>
-							<input type="text" name="namejp" id="namejp" required>
-						</div>
-						<div>
-							<label for="nameen">ENname</label><br>
-							<input type='text' name="nameen" id="nameen" required>
-						</div>
-						<div>
-							<label for="pricejp">JPprice</label><br>
-							<input type='number' name="pricejp" id="pricejp" required>
-						</div>
-						<div>
-							<label for="priceen">ENprice</label><br>
-							<input type='number' name="priceen" id="priceen" required>
-							</div>
-						<button>post</button>
-					</form>
-				</p>
-
-		{% else %}
-			<a class="button" href= "{{ url_for('login.login') }}">Login</a>
-			<a class="button" href= "{{ url_for('user.signup') }}">signup</a>
-		{% endif %}
-	
-	</div>
-
-	<div class="clear"></div>
+    <div class="clear"></div>
          </div>
     
          <div class="chapterType2">
@@ -130,8 +65,7 @@
         </div>
          
     <div class="chapterType1"> 
-        <h1>Live2D Pick-up!</h1>
-
+        <h1>Live2D Gallerry</h1>
         <ul class="Live2Dgallerry-contents">
                 <li>        <div class="video-container">
         <iframe width="560" height="315" src="https://www.youtube.com/embed/xv0XPkmLVR8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -156,73 +90,49 @@
        </div>
         <div class="clear"></div>
     </div>
-  
-	<div class="chapterType2">
-	<div id = "seetagareas">
-
-		<h2>Ninta's works</h2>
-
-		<script>
-			$(function() {
-			  $('#seetagsform').on('submit',function(event){
-				event.preventDefault();
-				var tags = $('#ajaxseetags').val();
-				$.ajax({
-				  type : 'POST',
-				  url : '/selecttag' ,
-				  dataType: 'html',
-				  data:{ tags: tags },
-				})
-
-				.done(function(data){
-				  $('#seetagareas').html(data);
-				});
-			  });
-			});
-		  </script>
-
-		<form id="seetagsform">
-			<div>
-				<label for="Selecttags">Select tags</label>
-				<select name="tags" id = "ajaxseetags">
-					{% for tag in tags %}
-					<option value="{{tag[3]}}">{{tag[3]}}</option>
-					{% endfor %}
-				</select>
-				<input type="submit" value="select tags">
-			</div>
-		</form>
-
-			{% include "areacontents.html" %}	
-
-		<div id="contentareas{{ count }}">
-
-			<script>
-				$(function() {
-				  $('#contentform{{ count }}').on('submit',function(event){
-					event.preventDefault();
-					var contents = $('#ajaxcontents{{ count }}').val();
-					$.ajax({
-					  type : 'POST',
-					  url : '/newcontents',
-					  dataType: 'html',
-					  data:{ contents: contents },
-					})
-	
-					.done(function(data){
-					  $('#contentareas{{ count }}').html(data);
-					});
-				  });
-				});
-			</script>
-			<form id ="contentform{{ count }}" >
-				<input type="hidden" value="{{ count }}" id = 'ajaxcontents{{ count }}'>
-				<input class="button3" type="submit" value="more contents">
-			</form>
-		</div>
-
-		</div>
-	</div>
+         
+    	<div class="chapterType1">
+            <h1>Art Gallerry</h1>
+            <ul class="gallerry-contents">
+		<li>
+                    <div><a href="images/Character art16(OC) in 2023.png" data-lightbox="group"><img class="fig2" src="images/Character art16(OC) in 2023.png"></a></div>
+                </li>
+		<li>
+                    <div><a href="images/Character art12(OC) in 2021.png" data-lightbox="group"><img class="fig2" src="images/Character art12(OC) in 2021.png"></a></div>
+                </li>
+		<li>
+                    <div><a href="images/Character art11(OC) in 2021.png" data-lightbox="group"><img class="fig2" src="images/Character art11(OC) in 2021.png"></a></div>
+                </li>
+                <li>
+                    <div><a href="images/VTuberHiyori.png" data-lightbox="group"><img class="fig2" src="images/VTuberHiyori.png"></a></div>
+                </li>
+                <li>
+                    <div><a href="images/Character art15(OC) in 2023.png" data-lightbox="group"><img class="fig2" src="images/Character art15(OC) in 2023.png"></a></div>
+                </li>
+		<li>
+                    <div><a href="images/Character art13(OC) in 2023.png" data-lightbox="group"><img class="fig2" src="images/Character art13(OC) in 2023.png"></a></div>
+                </li>
+		<li>
+                    <div><a href="images/Character art4(OC) in 2022.png" data-lightbox="group"><img class="fig2" src="images/Character art4(OC) in 2022.png"></a></div>
+                </li>
+                <li>
+                    <div><a href="images/Character art5(OC) in 2021.png" data-lightbox="group"><img class="fig2" src="images/Character art5(OC) in 2021.png"></a></div>
+                </li>
+                <li>
+                    <div><a href="images/Character art9(OC) in 2020.png" data-lightbox="group"><img class="fig2" src="images/Character art9(OC) in 2020.png"></a></div>
+                </li>
+                <li>
+                    <div><a href="images/Character art7(OC) in 2021.png" data-lightbox="group"><img class="fig2" src="images/Character art7(OC) in 2021.png"></a></div>
+                </li>
+                <li>
+                    <div><a href="images/Character art6(OC) in 2021.png" data-lightbox="group"><img class="fig2" src="images/Character art6(OC) in 2021.png"></a></div>
+                </li>
+		<li>
+                    <div><a href="images/Character art14(OC) in 2023.png" data-lightbox="group"><img class="fig2" src="images/Character art14(OC) in 2023.png"></a></div>
+                </li>
+            </ul>
+            <div class="clear"></div>
+        </div>
 
 </main>
 {% endblock %}

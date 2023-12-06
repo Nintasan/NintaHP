@@ -1,0 +1,15 @@
+<p>{{checkLen}}</p>
+<table>
+    <tr>
+        <td>No</td>
+        <td>potion</td>
+        <td>price</td>
+    </tr>
+    {% for selectoption in selectoptions%}
+    <tr>
+        <td>{{selectoption[0]}}</td>
+        <td>{{selectoption[1]}}</td>
+        <td>{{selectoption[3]}}</td>
+    </tr>   
+    {% endfor %}
+</table>

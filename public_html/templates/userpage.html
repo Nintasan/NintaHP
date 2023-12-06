@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+	<div class="chapterType1">
+	<h1>User page</h1>
+    <p>This site is a Live2D information curation site.</p>
+	</div>
+	<div class="chapterType1"></div>
+	<h2>upload Live2D Tweet!</h2>
+	<form action="{{ url_for('userpage.submission') }}" method="post">
+		<div>
+		  <label for="title1">title1</label><br>
+		  <input type="text" name="title1" id="title1" required>
+		</div>
+		<div>
+		  <label for="post1">post1</label><br>
+		  <input type='text' name="post1" id="post1" required minlength="4">
+		</div>
+		<button>send</button>
+		<p>{{ comment }}</p>
+	  </form>
+	</div>			
+</main>
+{% endblock %}

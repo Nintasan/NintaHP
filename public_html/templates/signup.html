@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main>
+	<div class="chapterType1">
+
+  <h1>signup</h1>
+    <form action="{{ url_for('user.register') }}" method="post">
+      <div>
+        <label for="user">username</label><br>
+        <input type="text" name="username" id="user" required>
+      </div>
+      <div>
+        <label for="pass">password</label><br>
+        <input type='password' name="password" id="pass" required minlength="7">
+      </div>
+      <button>send</button>
+    </form>
+
+<a class="button" href= "{{ url_for('login.login') }}">Login</a>
+
+  </div>			
+</main>
+{% endblock %}

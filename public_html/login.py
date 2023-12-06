@@ -2,13 +2,10 @@ import sqlite3
 from flask import Flask , render_template , request , g , redirect , url_for , session 
 from flask import Blueprint
 from werkzeug.security import check_password_hash, generate_password_hash
+from db import UpdatePosts
+from db import get_db
 
 bp_login = Blueprint('login', __name__)
-
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect('vtubedockdata.db')
-    return g.db
 
 @bp_login.route('/login')
 def login():
@@ -43,7 +40,7 @@ def access():
 @bp_login.route('/member')
 def member():
     if 'username' in session:
-            return render_template('userpage.html', title = 'Live2DTree userpage')
+            return render_template('home.html', title = 'Live2DTree userpage')
 
     else:
         return redirect(url_for('login.login'))
