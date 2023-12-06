@@ -43,7 +43,7 @@ if(mb_send_mail($to, $subject2, $content2, $mailfrom)){
    mb_send_mail($mailto,$subject,$content,$mailfrom);
    ?>
    <script>
-       window.location = 'https://ninta.main.jp/reply.html';
+       window.location = 'https://ninta.main.jp/reply';
    </script>
    <?php
 } else {

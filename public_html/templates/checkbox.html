@@ -3,11 +3,13 @@
     $(function() {
       $('#optionform').on('submit',function(event){
         event.preventDefault();
-        var options = $('#ajaxoptions').val();
+        var options = $('input[name="options"]:checked').map(function() {
+          return $(this).val();
+        }).get();
         $.ajax({
           type : 'POST',
           url : '/selectoption',
-          dataType: 'json',
+          dataType: 'html',
           contentType: 'application/json',
           data : JSON.stringify({ array : options})
         })

@@ -26,7 +26,13 @@ def option():
 @bp_option.route('/selectoption', methods=['POST'])
 def selectoption():
     data = request.get_json()
-    checkLen1 = data.get('array', [])
-    checkLen = len(checkLen1)
+    selectoptions = data.get('array', [])
+    stmt_formats = ','.join(['?'] * len(selectoptions))
+    con = get_db()
+    c = con.cursor()
+    c.execute(
+        "SELECT * FROM options WHERE id IN(%s)" % stmt_formats, tuple(selectoptions)
+    )
+    selectoptions = c.fetchall()
 
-    return render_template('option.html', checkLen = checkLen)
+    return render_template('option.html', selectoptions = selectoptions)
