@@ -79,6 +79,20 @@ def index():
             [newpostid,userid,likecheck]
             )
         con.commit()
+    
+
+    c = con.cursor()
+    cur = c.execute("select * from options WHERE categories = 'option' OR categories = 'planTitle'  ORDER BY orders")
+    options = cur.fetchall()
+
+    c = con.cursor()
+    cur = c.execute("select * from options WHERE categories = 'plan' ORDER BY orders")
+    plans = cur.fetchall()
+
+    c = con.cursor()
+    cur = c.execute("select * from options WHERE categories = 'planTitle' ORDER BY orders")
+    planTitles = cur.fetchall()
+
 
     if 'username' in session:
         userid = session['id']
@@ -93,7 +107,8 @@ def index():
     tagbox = Posts1.tagbox
     count = Posts1.count
 
-    return render_template('home.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/HOME】', posts = posts, userid = userid, tags= tags, tagbox = tagbox, count = count)
+    return render_template('home.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/HOME】', posts = posts, userid = userid, tags= tags, \
+                            tagbox = tagbox, count = count, options = options, planTitles = planTitles, plans = plans)
         
 
 @app.route('/newcontents', methods=['POST'])
@@ -125,12 +140,26 @@ def about():
 
 @app.route('/contact')
 def contact():
+    if 'username' in session:
+        userid = session['id']
+    else:
+        userid = 0
+
     con = get_db()
     c = con.cursor()
-    cur = c.execute("select * from options ORDER BY id")
+    cur = c.execute("select * from options WHERE categories = 'option' OR categories = 'planTitle'  ORDER BY orders")
     options = cur.fetchall()
+
+    c = con.cursor()
+    cur = c.execute("select * from options WHERE categories = 'plan' ORDER BY orders")
+    plans = cur.fetchall()
+
+    c = con.cursor()
+    cur = c.execute("select * from options WHERE categories = 'planTitle' ORDER BY orders")
+    planTitles = cur.fetchall()
     con.close()
-    return render_template('contact.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/Contact】', options = options)
+
+    return render_template('contact.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/Contact】', userid = userid, options = options, planTitles = planTitles, plans = plans)
 
 @app.route('/reply')
 def reply():

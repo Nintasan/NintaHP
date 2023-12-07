@@ -3,7 +3,7 @@
 <main>
 	<div class="chapterType2">
 		<h1>Home</h1>
-    	<img class="fig1" src="images/icon2.png">
+    	<img class="fig1" src="https://ninta.main.jp/images/icon2.png">
         <h1>Name: ニンタ(Ninta)</h1>
         <h3>I can take some commissions to design character art, rig Live2D avatar, channel art, icon and so on!<br>キャラクターデザイン、Live2Dモデリング、イラスト作成のご依頼お受けします。ご依頼の詳細はContactから。</h3>
 
@@ -86,6 +86,14 @@
 								<label for="priceen">ENprice</label><br>
 								<input type='number' name="priceen" id="priceen" required>
 							</div>
+							<div>
+								<label for="orders">Orders</label><br>
+								<input type='number' name="orders" id="orders" required>
+							</div>
+							<div>
+								<label for="categories">Categories</label><br>
+								<input type='text' name="categories" id="categories" required>
+							</div>
 							<button>post</button>
 						</form>
 					</p>
@@ -115,6 +123,14 @@
 								<label for="priceen">ENprice</label><br>
 								<input type='number' name="priceen" id="priceen" required>
 							</div>
+							<div>
+								<label for="orders">Orders</label><br>
+								<input type='number' name="orders" id="orders" required>
+							</div>
+							<div>
+								<label for="categories">Categories</label><br>
+								<input type='text' name="categories" id="categories" required>
+							</div>
 							<button>post</button>
 						</form>
 					</p>
@@ -132,10 +148,55 @@
 					</form>
 				</p>
 			</div>
+
+			<div class="float_left">
+				<h2>Update orders</h2>
+				<p>
+					<form action="{{ url_for('option.updateorder') }}" method="post">
+						<div>
+							<label for="id">ID</label><br>
+							<input type="mumber" name="id" id="id" required>
+						</div>
+						<div>
+							<label for="order">Order</label><br>
+							<input type="mumber" name="order" id="order" required>
+						</div>
+						<button>post</button>
+					</form>
+				</p>
+			</div>
+
+			<div class="float_left">
+				<h2>Add column</h2>
+					<p>
+						<form action="{{ url_for('option.addcolumnoption') }}" method="post">
+							<div>
+								<label for="tablename">Table name</label><br>
+								<input type="text" name="tablename" id="tablename" required>
+							</div>
+							<div>
+								<label for="columnname">Column name</label><br>
+								<input type='text' name="columnname" id="columnname" required>
+							</div>
+							<div>
+								<label for="type">Type</label><br>
+								<input type='text' name="type" id="type" required>
+							</div>
+							<div>
+								<label for="default">Default set</label><br>
+								<input type='text' name="default" id="default" required>
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+			</div>
+
+
 		</div>	
 		<div class="clear"></div>
 
 		{% endif %}
+		<div class="clear"></div>
 	
 	</div>
 
@@ -143,23 +204,18 @@
          </div>
     
          <div class="chapterType2">
-            <a class="button" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');">お見積り・ご連絡 / Quate</a>
+            <a class="button" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');">お見積り・ご連絡 / Quotation</a>
             <div id="layer_折りたたみA" style="display: none;position:relative;margin-left:15pt" class="close">
-            {% if content %}
-            <p>
-                {% for contenttext in content %}
-                    {{contenttext[2]}}<br>
-                {%endfor%}
-            </p>
-            {% else %}
-                <h1 id="1">お見積り・ご連絡/Quotation</h1>
-                <p>If you are interested in request of making a VTuber, please contact me with filling out form!<br>Vtuber作成、キャラデザの依頼や質問があればお気軽にご相談ください！<br>
-                メールフォームの下にご依頼方法と値段表を記入してあります。</p>
-                <p>VTuber用イラスト作成 ~35,000円<br>Designing VTuber art 300usd<br>
-                イラストパーツ分け ~15,000円 <br>Making a psd ready for Live2D rigging 200usd<br>
-                Live2Dモデリング ~150,000円 <br> Live2D rigging 1200usd
-                </p>
-            {% endif %}
+
+				<p>
+				<a class="button" href="javascript:void(0)" id="category_折りたたみB" onclick="show('折りたたみB');">プラン表/ Plan sheet</a>
+            	<div  id="layer_折りたたみB" style="display: none;position:relative;margin-left:15pt" class="close">
+					{% include "plan.html" %}
+				</div>
+				</p>
+
+				{% include "checkbox.html" %}
+
                 <form class="mailForm" action=mail.php method="post">
                     <dl>
                       <dt>お名前/Name</dt>

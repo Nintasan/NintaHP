@@ -1,15 +1,14 @@
 
-<table>
+<table class="table">
     <tr>
-        <td>No</td>
         <td>potion</td>
         <td>price</td>
     </tr>
     {% for selectoption in selectoptions%}
     <tr>
-        <td>{{selectoption[0]}}</td>
-        <td>{{selectoption[1]}}</td>
-        <td>{{selectoption[3]}}</td>
+        <td>{{selectoption[1]}} / {{selectoption[1]}}</td>
+        <td>{{selectoption[3]}} JPY / {{selectoption[4]}} USD</td>
     </tr>   
     {% endfor %}
 </table>
+<h2>合計: {{sumall[0]}} JPY(円) <br> Total : {{sumall[1]}} USD </h2>

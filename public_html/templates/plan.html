@@ -1,0 +1,69 @@
+<div class="chapterType2">
+  {%if userid != 0 %}
+  <h2>Live2Dプラン表 / Live2D plan sheet</h2>
+    <table class="table">
+      <th> ID </th>
+      <th> name </th>
+      {% for price in planTitles %}
+      <th> {{price[1]}}  / {{price[2]}}  <br> {{price[3]}} JPY / {{price[4]}} USD</th>
+      {% endfor %}
+      </tr>
+
+      {% for plan in plans %}
+      <tr>
+              <td>{{plan[0]}} </td>
+              <td>{{plan[1]}} <br> {{plan[2]}}</td>
+              <td>{{plan[7]}}</td>
+              <td>{{plan[8]}}</td>
+              <td>{{plan[9]}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div>
+      <h2>Update plan contents</h2>
+        <p>
+          <form action="{{ url_for('option.plancontent') }}" method="post">
+            <div>
+              <label for="planID">PlanID</label><br>
+              <input type="text" name="planID" id="planID">
+            </div>
+            <div>
+              <label for="plan1">Plan1</label><br>
+              <input type="text" name="plan1" id="plan1">
+            </div>
+            <div>
+              <label for="plan2">Plan2</label><br>
+              <input type='text' name="plan2" id="plan2">
+            </div>
+            <div>
+              <label for="plan3">Plan3</label><br>
+              <input type='text' name="plan3" id="plan3">
+            </div>
+            <button>post</button>
+          </form>
+        </p>
+    </div>
+
+  {% else %}
+
+    <h2>Live2Dプラン表 / Live2D plan sheet</h2>
+  <table class="table">
+    <tr>
+    <th> </th>
+    {% for price in planTitles %}
+    <th> {{price[1]}}  / {{price[2]}}  <br> {{price[3]}} JPY / {{price[4]}} USD</th>
+    {% endfor %}
+    </tr>
+
+    {% for plan in plans %}
+    <tr>
+            <td>{{plan[1]}} <br> {{plan[2]}}</td>
+            <td>{{plan[7]}}</td>
+            <td>{{plan[8]}}</td>
+            <td>{{plan[9]}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>

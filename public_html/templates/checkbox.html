@@ -21,23 +21,50 @@
     });
 </script>
 
+{%if userid != 0 %}
+
 <form id = "optionform">
-    <p>Choose options you want to add</p>
-  <table>
+  <h2>見積表 / Quotation sheet</h2>
+  <p>Choose options you want to add</p>
+  <table class="table">
     <tr>
-      <th>options</th>
-      <th>price</th>
+      <td>ID</td>
+      <td>options</td>
+      <td>price</td>
     </tr>
     {% for option in options %}
     <tr>
+            <td>{{option[0]}}</td>
             <td><label id="{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
-            <td> JPY{{option[3]}} / USD{{option[4]}}</td>
+            <td> {{option[3]}} JPY / {{option[4]}} USD</td>
         
     </tr>
     {% endfor %}
   </table>
-  <p><input type="submit" value="send" id = "ajaxoptions"></p>
+  <input class="button2" type="submit" value="見積確認 / Check out uotation" id = "ajaxoptions">
 </form>
+
+{% else %}
+
+<form id = "optionform">
+  <h2>見積表 / Quotation sheet</h2>
+  <p>Choose options you want to add</p>
+<table class="table">
+  <tr>
+    <td>options</td>
+    <td>price</td>
+  </tr>
+  {% for option in options %}
+  <tr>
+          <td><label id="{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
+          <td> {{option[3]}} JPY / {{option[4]}} USD</td>
+  </tr>
+  {% endfor %}
+</table>
+<input class="button2" type="submit" value="見積確認 / Check out uotation" id = "ajaxoptions">
+</form>
+
+{% endif %}
 
 <div id="optionarea">
 </div>
