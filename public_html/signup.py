@@ -9,7 +9,7 @@ bp_signup = Blueprint('user', __name__)
 
 @bp_signup.route('/signup')
 def signup():
-    return render_template('signup.html', title = 'Live2DTree signup')
+    return render_template('login.html', title = 'NintaHP login')
 
 @bp_signup.route('/register', methods=['POST'])
 def register():

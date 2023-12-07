@@ -16,69 +16,125 @@
 
 		
 		{% if userid != 0 %}
-		
-			<h2>Upload Live2D Tweet!</h2>
-			<p>
-				<form action="{{ url_for('userpage.submission') }}" method="post">
-					<div>
-					<label for="title1">title</label><br>
-					<input type="text" name="title" id="title" required>
-					</div>
-					<div>
-					<label for="post1">post from X or YouTube</label><br>
-					<input type='text' name="post" id="post" required minlength="4">
-					</div>
-					<button>post</button>
-				</form>
-			</p>
-
-
-			
-			<h2>Creat new category tags</h2>
-				<form action="{{ url_for('tag.createtag') }}" method="post">
-					<div>
-					<label for="post1">Newtag</label><br>
-					<input type='text' name="newtag" id="newtag" required minlength="1">
-					</div>
-					<button>post</button>
-				</form>
-
-				{% with messages = get_flashed_messages() %}
-					{% if messages %}
-						<ul class="flash">
-						{% for message in messages %}
-							<li>{{ message }}</li>
-						{% endfor %}
-						</ul>
-					{% endif %}
-				{% endwith %}
-			
-			<h2>Add options</h2>
+		<div class="clear_both">
+			<div class="float_left">
+				<h2>Upload posts</h2>
 				<p>
-					<form action="{{ url_for('option.option') }}" method="post">
+					<form action="{{ url_for('userpage.submission') }}" method="post">
 						<div>
-							<label for="namejp">JPname</label><br>
-							<input type="text" name="namejp" id="namejp" required>
+						<label for="title1">title</label><br>
+						<input type="text" name="title" id="title" required>
 						</div>
 						<div>
-							<label for="nameen">ENname</label><br>
-							<input type='text' name="nameen" id="nameen" required>
+						<label for="post1">post from X or YouTube</label><br>
+						<input type='text' name="post" id="post" required minlength="4">
 						</div>
-						<div>
-							<label for="pricejp">JPprice</label><br>
-							<input type='number' name="pricejp" id="pricejp" required>
-						</div>
-						<div>
-							<label for="priceen">ENprice</label><br>
-							<input type='number' name="priceen" id="priceen" required>
-							</div>
 						<button>post</button>
 					</form>
 				</p>
+			</div>
 
-		{% else %}
-			<a class="button" href= "{{ url_for('login.login') }}">Login</a>
-			<a class="button" href= "{{ url_for('user.signup') }}">signup</a>
+			<h2>Delete posts</h2>
+			<p>
+				<form action="{{ url_for('userpage.deletepost') }}" method="post">
+					<div>
+					<label for="id">ID</label><br>
+					<input type="number" name="id" id="id" required>
+					<button>post</button>
+				</form>
+			</p>
+		</div>
+
+
+			<div class="float_left">	
+				<h2>Creat new category tags</h2>
+					<form action="{{ url_for('tag.createtag') }}" method="post">
+						<div>
+						<label for="post1">Newtag</label><br>
+						<input type='text' name="newtag" id="newtag" required minlength="1">
+						</div>
+						<button>post</button>
+					</form>
+					{% with messages = get_flashed_messages() %}
+						{% if messages %}
+							<ul class="flash">
+							{% for message in messages %}
+								<li>{{ message }}</li>
+							{% endfor %}
+							</ul>
+						{% endif %}
+					{% endwith %}
+			</div>
+				
+			<div class="float_left">
+				<h2>Add options</h2>
+					<p>
+						<form action="{{ url_for('option.option') }}" method="post">
+							<div>
+								<label for="namejp">JPname</label><br>
+								<input type="text" name="namejp" id="namejp" required>
+							</div>
+							<div>
+								<label for="nameen">ENname</label><br>
+								<input type='text' name="nameen" id="nameen" required>
+							</div>
+							<div>
+								<label for="pricejp">JPprice</label><br>
+								<input type='number' name="pricejp" id="pricejp" required>
+							</div>
+							<div>
+								<label for="priceen">ENprice</label><br>
+								<input type='number' name="priceen" id="priceen" required>
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+			</div>
+
+			<div class="float_left">
+				<h2>Update options</h2>
+					<p>
+						<form action="{{ url_for('option.updateoption') }}" method="post">
+							<div>
+								<label for="id">ID</label><br>
+								<input type="mumber" name="id" id="id" required>
+							</div>
+							<div>
+								<label for="namejp">JPname</label><br>
+								<input type="text" name="namejp" id="namejp" required>
+							</div>
+							<div>
+								<label for="nameen">ENname</label><br>
+								<input type='text' name="nameen" id="nameen" required>
+							</div>
+							<div>
+								<label for="pricejp">JPprice</label><br>
+								<input type='number' name="pricejp" id="pricejp" required>
+							</div>
+							<div>
+								<label for="priceen">ENprice</label><br>
+								<input type='number' name="priceen" id="priceen" required>
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+			</div>
+			
+			<div class="float_left">
+				<h2>Delete options</h2>
+				<p>
+					<form action="{{ url_for('option.deleteoption') }}" method="post">
+						<div>
+							<label for="id">ID</label><br>
+							<input type="mumber" name="id" id="id" required>
+						</div>
+						<button>post</button>
+					</form>
+				</p>
+			</div>
+		</div>	
+		<div class="clear"></div>
+
 		{% endif %}
 	
 	</div>

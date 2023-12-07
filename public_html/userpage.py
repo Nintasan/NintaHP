@@ -66,6 +66,18 @@ def submission():
     else:
         return redirect(url_for('index'))
 
+@bp_userpage.route('/deletepost', methods=['POST'])
+def deletepost():
+    postid = request.form['id']
+    con = get_db()
+    con.execute(
+    "DELETE FROM posts WHERE id = ?",
+        [postid]
+        )
+    con.commit()
+    con.close()
+    
+    return redirect(url_for('index'))
 
 
 class LikesSubmission:

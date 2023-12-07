@@ -23,6 +23,39 @@ def option():
     con.close()
 
     return redirect(url_for('index'))
+
+@bp_option.route('/updateoption', methods=['POST'])
+def updateoption():
+    optionid = request.form['id']
+    namejp = request.form['namejp']
+    nameen = request.form['nameen']
+    pricejp = request.form['pricejp']
+    priceen = request.form['priceen']
+
+    con = get_db()
+    con.execute(
+            "UPDATE options SET NAMEJP = ?, NAMEEN = ?, PRICEJP = ?, PRICEEN = ? WHERE id =?",
+            [namejp, nameen, pricejp, priceen, optionid]
+        )
+    con.commit()
+    con.close()
+
+    return redirect(url_for('index'))
+
+@bp_option.route('/deleteoption', methods=['POST'])
+def deleteoption():
+    optionid = request.form['id']
+
+    con = get_db()
+    con.execute(
+            "DELETE FROM options WHERE id = ?",
+            [optionid]
+        )
+    con.commit()
+    con.close()
+
+    return redirect(url_for('index'))
+
 @bp_option.route('/selectoption', methods=['POST'])
 def selectoption():
     data = request.get_json()

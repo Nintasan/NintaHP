@@ -23,12 +23,20 @@
 
 <form id = "optionform">
     <p>Choose options you want to add</p>
+  <table>
+    <tr>
+      <th>options</th>
+      <th>price</th>
+    </tr>
     {% for option in options %}
-        <label id="{{option[0]}}">
-            <input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} : JPY{{option[3]}} / USD{{option[4]}}
-        </label>
+    <tr>
+            <td><label id="{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
+            <td> JPY{{option[3]}} / USD{{option[4]}}</td>
+        
+    </tr>
     {% endfor %}
-    <p><input type="submit" value="send" id = "ajaxoptions"></p>
+  </table>
+  <p><input type="submit" value="send" id = "ajaxoptions"></p>
 </form>
 
 <div id="optionarea">
