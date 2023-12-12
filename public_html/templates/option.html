@@ -1,12 +1,12 @@
 
 <table class="table">
     <tr>
-        <td>potion</td>
-        <td>price</td>
+        <td>potions</td>
+        <td>prices</td>
     </tr>
     {% for selectoption in selectoptions%}
     <tr>
-        <td>{{selectoption[1]}} / {{selectoption[1]}}</td>
+        <td>{{selectoption[1]}} / {{selectoption[2]}}</td>
         <td>{{selectoption[3]}} JPY / {{selectoption[4]}} USD</td>
     </tr>   
     {% endfor %}
