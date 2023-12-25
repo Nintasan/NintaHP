@@ -4,10 +4,11 @@
     <div class = fig2>
             <h3>{{ post[3] }}</h3>
         {% if 'twitter.com' in post[4] %}
+        
           <blockquote class="twitter-tweet">
             <a href="{{ post[4] }}"></a>
         </blockquote>
-
+        
         {% elif 'www.youtube.com/embed/' in post[4] %}
 
         <iframe class="youtube" src="{{ post[4] }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
