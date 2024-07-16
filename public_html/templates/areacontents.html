@@ -1,7 +1,7 @@
 <ul class="gallerry-contents">	
     {% for post in posts%}
     <li>
-    <div class = fig2>
+    <div>
             <h3>{{ post[3] }}</h3>
         {% if 'twitter.com' in post[4] %}
         
@@ -91,8 +91,8 @@
 
         </div>
     
-        <div class="clear"></div>
     </div>
+    <div class="clear"></div>
     </li>
     {% endfor %}
 </ul>

@@ -447,9 +447,7 @@ html{overflow-x:hidden;}
 	border: 1px solid #dadada ;
 	margin-right: 1.25%;
 	margin-bottom: 5px;
-    height: auto;
-	width: 97%;
-	padding-top: 600px;
+	width: 31.5%;
 	position: relative;
 }
 .gallerry-contents li:last-child {
@@ -722,7 +720,6 @@ nav li a:hover{
 	margin-right: 1.25%;
 	margin-bottom: 5px;
 	width: 31.5%;
-	padding-top: 600px;
 	position: relative;
 }
 .gallerry-contents li:last-child {
