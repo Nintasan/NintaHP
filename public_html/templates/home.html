@@ -17,6 +17,8 @@
         <a class="button" href="https://www.pixiv.net/users/43235147">Pixiv</a>
         <a class="button" href="https://www.twitch.tv/ninta_live2d">Twitch</a>
 		<a class="button" href="https://www.youtube.com/@nintaArtLive2D">YouTube</a>
+		<a class="button" href="https://ko-fi.com/nintajp">Ko-fi</a>
+
 
 		
 		{% if userid != 0 %}
@@ -194,65 +196,18 @@
 						</form>
 					</p>
 			</div>
-
-
-		</div>	
-		<div class="clear"></div>
-
 		{% endif %}
-		<div class="clear"></div>
-	
-	</div>
 
-	<div class="clear"></div>
-         </div>
-    
-         <div class="chapterType2">
-            <a class="button" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');">お見積り・ご連絡 / Quotation</a>
-            <div id="layer_折りたたみA" style="display: none;position:relative;margin-left:15pt" class="close">
-				<p>リピーターの方、活動実績のある方、企業様の場合は実績を考慮させていただき、なるべくお安くご依頼をお受けさせていただきます。<br>
-					Clients who commissioned me before, who has many followers or have experience of streaming, or who are belonging to companies are able to take much discounts.</p>
-				<p>
-				<a class="button" href="javascript:void(0)" id="category_折りたたみB" onclick="show('折りたたみB');">プラン表/ Plan sheet</a>
-            	<div  id="layer_折りたたみB" style="display: none;position:relative;margin-left:15pt" class="close">
-					{% include "plan.html" %}
-				</div>
-				</p>
+		 <div class="clear"></div>
+		
+		</div>
 
-				{% include "checkbox.html" %}
-				<h2>ご連絡 / Contact</h2>
-
-                <form class="mailForm" action=mail.php method="post">
-                    <dl>
-                      <dt>お名前/Name</dt>
-                      <dd>
-                        <input name="name" type="text" required="required" id="name">
-                      </dd>
-                      <dt>メールアドレス/your Email address</dt>
-                      <dd>
-                        <input name="email" type="email" required="required" id="email">
-                      </dd>
-                      <dt>ご依頼の概要/Request contents</dt>
-                      <dd>
-                        <textarea name="content" required="required" id="content"></textarea>
-                      </dd>
-                      <input type="hidden" id="token" name="token" value="1234567" />
-                    </dl>
-                    <p class="center" id="submit_button_cover">
-                        <input name="submit_buton" type="submit" id="submit_button" value="送信/post" class="button2">
-                    </p>
-                       </form>
-            </div>
-    
-    
-        </div>
-         
-    <div class="chapterType1"> 
+	<div class="chapterType1"> 
         <h1>Live2D Pick-up!</h1>
 
         <ul class="Live2Dgallerry-contents">
                 <li>        <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/xv0XPkmLVR8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+					<iframe width="560" height="315" src="https://www.youtube.com/embed/xeTCihh0kPg?si=_tmWsc5A68Jp4iP0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
                     
                 </li>
@@ -272,8 +227,46 @@
                 </li>
             </ul>	
        </div>
+	   <div class="clear"></div>
+    
+         <div class="chapterType2">
+			<h1>ご依頼 / commission</h1>
+			<h3>Skeb discount until 30/SEP/2024</h3>
+			<p>If you requested a Skeb commission before, I discount the same price of the Skeb commission from a VTuber making (design&rig) commission!!!<br>
+			Let me know you commissioned me before through Skeb, when you commissionme to make a new VTuber!</p>
+			<h3>Get discouts!!!→ <a class="button" href="https://skeb.jp/@ninta_Mk3">Skeb commission</a></h3>
+
+			<!-- waiting lists -->
+				<p>
+					{% include "WaitList.html" %}
+				</p>
+
+				<h2>Live2Dプラン表 / Live2D plan sheet</h2>
+
+				<p>
+				<a class="button3" href="javascript:void(0)" id="category_折りたたみB" onclick="show('折りたたみB');">プラン表/ Plan sheet</a>
+            	<div  id="layer_折りたたみB" style="display: none;position:relative;margin-left:15pt" class="close">
+					{% include "plan.html" %}
+				</div>
+				</p>
+
+				{% include "checkbox.html" %}
+
+				<p>リピーターの方、活動実績のある方、企業様の場合は実績を考慮させていただき、なるべくお安くご依頼をお受けさせていただきます。<br>
+					Clients who commissioned me before, who has many followers or have experience of streaming, or who are belonging to companies are able to take much discounts.</p>
+				<p>
+
+				<h2>ご連絡 / Contact</h2>
+
+				<h3>Googleフォームで依頼内容を送る / Send Google forms</h3>
+				<p><a class="button" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');"> Open Google form</a></p>
+				<div  id="layer_折りたたみA" style="display: none;position:relative;margin-left:15pt;" class="close">
+					<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd4I8yWToEeZWh3GFI30-1rDU2czehx-Tm8FcjbVmwXCQhtgA/viewform?embedded=true" width="100%" height="800px" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+				</div>
+				<div class="clear"></div>
+    	</div>
+         
         <div class="clear"></div>
-    </div>
   
 	<div class="chapterType2">
 	<div id = "seetagareas">

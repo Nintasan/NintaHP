@@ -2,6 +2,14 @@
 p{
     padding-left: 10px;
 }
+.slideTgas{
+	width: 98%;
+	overflow: scroll;
+	white-space: nowrap;
+	height: 300px;
+	margin: 5px;
+	padding: 5px;
+}
 
 .TitleAndIcon{
     text-align: center;
@@ -447,13 +455,12 @@ html{overflow-x:hidden;}
 	border: 1px solid #dadada ;
 	margin-right: 1.25%;
 	margin-bottom: 5px;
-	width: 31.5%;
+	width: 97%;
 	position: relative;
 }
 .gallerry-contents li:last-child {
 	margin-right: 0;
 }
-    
     
 nav{
 	border-top:8px solid lightblue;
@@ -832,6 +839,30 @@ ID_3{
 	position: relative;
 	padding: 10px;
 	}
+
+	/* waiting list table */
+
+.tableWait{
+	border: 1px solid #aaa;
+	width: 95%;
+	border-collapse:collapse;
+	writing-mode: vertical-lr;
+	}
+
+.tableWait th, .tableWait td{
+	border: 1px solid #aaa;
+	padding:4px;
+	writing-mode: horizontal-tb;
+	}
+
+
+.tableWait th, .tableWait td{
+	border: 1px solid #aaa;
+	padding:4px;
+	writing-mode: horizontal-tb;
+	height:25px;			
+	}
+
 /*ページ　固有　ホームend*/
 
 /*メールフォーム*/

@@ -3,6 +3,13 @@
 <main>
     <h1>Contact</h1>
     <div class="chapterType1">
+
+        <h2>
+            {% include "WaitList.html" %}
+        </h2>
+
+        <h2>Live2Dプラン表 / Live2D plan sheet</h2>
+
         <p>
             <a class="button" href="javascript:void(0)" id="category_折りたたみB" onclick="show('折りたたみB');">プラン表/ Plan sheet</a>
             <div id="layer_折りたたみB" style="display: none;position:relative;margin-left:15pt" class="close">
@@ -13,6 +20,13 @@
     </div>
     <div class="chapterType1">
         <h1 id="1">お見積り・ご連絡/Quotation</h1>
+        <h3>Googleフォームを送る / Send Google forms</h3>
+				<p><a class="button3" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');"> Open Google form</a></p>
+				<div  id="layer_折りたたみA" style="display: none;position:relative;margin-left:15pt" class="close">
+					<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd4I8yWToEeZWh3GFI30-1rDU2czehx-Tm8FcjbVmwXCQhtgA/viewform?embedded=true" width="100%" height="800px" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+				</div>
+
+        <h3>E-mail</h3>
 
         <form class="mailForm" action=mail.php method="post">
             <dl>
