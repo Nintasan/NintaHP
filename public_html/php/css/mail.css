@@ -1,0 +1,10 @@
+.mailForm textarea{
+    width: 90%;
+    height: 200px;
+    }
+.mailForm input{
+    width: 60%;
+    }
+.mailForm dd{
+    margin:0 auto;
+    }
