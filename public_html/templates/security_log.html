@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+    <h1>Security Log</h1>
+    <div class="chapterType1">
+        <h2>Suspicious Activity (Last 100 entries)</h2>
+
+        {% if logs %}
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Timestamp</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">IP Address</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Activity Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Details</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">User Agent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">{{ log.timestamp }}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">{{ log.ip }}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; color:
+                        {% if log.type == 'RATE_LIMIT_EXCEEDED' %}#ff6b6b
+                        {% elif log.type == 'SUSPICIOUS_USER_AGENT' %}#ff9f43
+                        {% elif log.type == 'INVALID_REFERER' %}#feca57
+                        {% elif log.type == 'DIRECT_FILE_ACCESS' %}#ee5a6f
+                        {% else %}#333{% endif %};">
+                        {{ log.type }}
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #ddd; max-width: 300px; word-wrap: break-word;">{{ log.details }}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd; max-width: 200px; word-wrap: break-word; font-size: 0.9em;">{{ log.user_agent }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No suspicious activity recorded.</p>
+        {% endif %}
+
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('index') }}" class="button">Back to Home</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

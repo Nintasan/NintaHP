@@ -1,0 +1,75 @@
+# Python/Flask WSGI Configuration
+RewriteEngine On
+RewriteBase /
+
+# IMPORTANT: Allow direct access to static files - DO NOT REWRITE
+# Match /static/ URLs directly - stop processing and serve the file
+RewriteRule ^static/ - [L]
+
+# Match /images/ URLs directly - stop processing and serve the file
+RewriteRule ^images/ - [L]
+
+# Match common file extensions - stop processing and serve the file
+RewriteRule \.(png|jpg|jpeg|gif|css|js|json|moc3|model3\.json|physics3\.json|cdi3\.json|exp3\.json|motion3\.json|ico|svg|woff|woff2|ttf|eot)$ - [L]
+
+# For all other requests, check if file or directory exists
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite to index.cgi only if file doesn't exist
+RewriteRule ^(.*)$ index.cgi/$1 [QSA,L]
+
+# Enable CGI for .cgi files
+AddHandler cgi-script .cgi
+Options +ExecCGI
+
+# ================== Live2D File Protection ==================
+
+# Block direct downloads from download managers and bots
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block known download tools and bots for Live2D files
+    RewriteCond %{HTTP_USER_AGENT} (wget|curl|httrack|teleport|webcopier|download|fetcher) [NC]
+    RewriteCond %{REQUEST_URI} ^/static/live2d/ [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Disable hotlinking for Live2D model files
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?ninta\.main\.jp [NC]
+    RewriteCond %{REQUEST_URI} \.(moc3|model3\.json|physics3\.json)$ [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# CORS Headers - Restricted access for Live2D files
+<IfModule mod_headers.c>
+    # For Live2D files, only allow same-origin
+    <FilesMatch "\.(moc3|model3\.json|physics3\.json|cdi3\.json)$">
+        Header set Access-Control-Allow-Origin "https://ninta.main.jp"
+        Header set Access-Control-Allow-Methods "GET, OPTIONS"
+        Header set Access-Control-Allow-Headers "Content-Type, X-Requested-With"
+        Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+        Header set X-Robots-Tag "noindex, nofollow, noarchive"
+    </FilesMatch>
+
+    # For texture files
+    <FilesMatch "\.png$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+    </FilesMatch>
+</IfModule>
+
+# MIME Types for Live2D files
+AddType application/json .json
+AddType application/json .motion3.json
+AddType application/json .exp3.json
+AddType application/json .model3.json
+AddType application/json .physics3.json
+AddType application/json .cdi3.json
+AddType application/octet-stream .moc3
+

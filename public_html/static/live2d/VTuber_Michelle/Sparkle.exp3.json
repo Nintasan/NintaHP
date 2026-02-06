@@ -1,0 +1,80 @@
+{
+    "Type": "Live2D Expression",
+    "Parameters": [
+        {
+            "Id": "AngryExpL",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "AngryExpR",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "AngryExp",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "sparklingExpL",
+            "Value": 1.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Sad3",
+            "Value": 1.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Sad4",
+            "Value": 1.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "SurprisedExpL",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Suprised3",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Suprised4",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Param107",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Param108",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Param109",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Param110",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "Param111",
+            "Value": 0.0,
+            "Blend": "Add"
+        },
+        {
+            "Id": "CryExp",
+            "Value": 0.0,
+            "Blend": "Add"
+        }
+    ]
+}

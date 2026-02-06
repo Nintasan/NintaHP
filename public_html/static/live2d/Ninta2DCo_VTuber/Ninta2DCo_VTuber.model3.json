@@ -1,0 +1,23 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "Ninta2DCo_VTuber.moc3",
+		"Textures": [
+			"Ninta2DCo_VTuber.2048/texture_00.png"
+		],
+		"Physics": "Ninta2DCo_VTuber.physics3.json",
+		"DisplayInfo": "Ninta2DCo_VTuber.cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}

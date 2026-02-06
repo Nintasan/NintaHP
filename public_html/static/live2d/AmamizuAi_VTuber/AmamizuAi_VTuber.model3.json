@@ -1,0 +1,39 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "AmamizuAi_VTuber.moc3",
+		"Textures": [
+			"AmamizuAi_VTuber.2048/texture_00.png"
+		],
+		"Physics": "AmamizuAi_VTuber.physics3.json",
+		"DisplayInfo": "AmamizuAi_VTuber.cdi3.json"
+	},
+	"Metadata": {
+		"Author": "Ninta",
+		"Copyright": "© 2024 Ninta. All Rights Reserved.",
+		"License": "Sample Model - Not for Commercial Use",
+		"Website": "https://ninta.main.jp",
+		"CreatedDate": "2024",
+		"Watermark": "This Live2D model is the property of Ninta"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeLSmile",
+				"ParamEyeROpen",
+				"ParamEyeRSmile"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": [
+				"ParamMouthForm",
+				"ParamMouthOpenY"
+			]
+		}
+	]
+}

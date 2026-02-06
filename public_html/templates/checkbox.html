@@ -1,11 +1,160 @@
 
+<style>
+.table td {
+  padding: 0;
+}
+
+.option-label {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.option-label:hover {
+  background-color: #e8f4f8;
+}
+
+.option-label input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+tr.checked-row {
+  background-color: #d4edda;
+}
+
+tr.checked-row .option-label {
+  background-color: #c3e6cb;
+  font-weight: bold;
+}
+
+tr.checked-row .option-label:hover {
+  background-color: #b1dfbb;
+}
+
+tr.checked-row td {
+  background-color: #d4edda;
+}
+
+/* 見積確認ボタンのスタイル */
+.button2 {
+  display: inline-block;
+  padding: 16px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.button2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+  transition: left 0.5s ease;
+}
+
+.button2:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.button2:hover::before {
+  left: 100%;
+}
+
+.button2:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+}
+
+.button2:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3), 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+/* ボタン押下時のアニメーション */
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.button2.clicked {
+  animation: buttonPress 0.3s ease;
+}
+
+/* 見積結果エリアのスタイル */
+#optionarea {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 2px solid #e0e0e0;
+}
+</style>
+
 <script>
     $(function() {
+      // チェックボックスの状態変更時に行の背景色を変更
+      $('input[type="checkbox"][name="options"]').on('change', function() {
+        if ($(this).is(':checked')) {
+          $(this).closest('tr').addClass('checked-row');
+        } else {
+          $(this).closest('tr').removeClass('checked-row');
+        }
+      });
+
+      // ボタンクリック時のアニメーション
+      $('#ajaxoptions').on('click', function() {
+        $(this).addClass('clicked');
+        setTimeout(() => {
+          $(this).removeClass('clicked');
+        }, 300);
+      });
+
       $('#optionform').on('submit',function(event){
         event.preventDefault();
+        var $button = $('#ajaxoptions');
+
+        // ボタンを無効化してローディング状態に
+        $button.prop('disabled', true);
+        var originalText = $button.val();
+        $button.val('処理中... / Processing...');
+
         var options = $('input[name="options"]:checked').map(function() {
           return $(this).val();
         }).get();
+
+        console.log('Sending options:', options);
+
         $.ajax({
           type : 'POST',
           url : '/selectoption',
@@ -13,9 +162,28 @@
           contentType: 'application/json',
           data : JSON.stringify({ array : options})
         })
-
         .done(function(data){
+          console.log('Success! Received data:', data);
           $('#optionarea').html(data);
+          // スムーズにスクロール
+          $('html, body').animate({
+            scrollTop: $('#optionarea').offset().top - 100
+          }, 500);
+        })
+        .fail(function(xhr, status, error) {
+          console.error('=== AJAX ERROR ===');
+          console.error('Error:', error);
+          console.error('Status:', status);
+          console.error('XHR Status:', xhr.status);
+          console.error('Response Text:', xhr.responseText);
+          console.error('==================');
+          alert('エラーが発生しました: ' + error + '\nステータス: ' + xhr.status + '\n\n詳細はブラウザのコンソール(F12)を確認してください。');
+        })
+        .always(function() {
+          console.log('Request completed');
+          // ボタンを元に戻す
+          $button.prop('disabled', false);
+          $button.val(originalText);
         });
       });
     });
@@ -35,9 +203,9 @@
     {% for option in options %}
     <tr>
             <td>{{option[0]}}</td>
-            <td><label id="{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
+            <td><label class="option-label" for="opt{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id="opt{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
             <td> {{option[3]}} JPY / {{option[4]}} USD</td>
-        
+
     </tr>
     {% endfor %}
   </table>
@@ -56,7 +224,7 @@
   </tr>
   {% for option in options %}
   <tr>
-          <td><label id="{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id = "{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
+          <td><label class="option-label" for="opt2{{option[0]}}"><input type="checkbox" name="options" value="{{option[0]}}" id="opt2{{option[0]}}">{{option[1]}} / {{option[2]}} </label></td>
           <td> {{option[3]}} JPY / {{option[4]}} USD</td>
   </tr>
   {% endfor %}
@@ -69,4 +237,163 @@
 <div id="optionarea">
 </div>
 
+<!-- メールフォーム（通常時に表示、見積確認時は非表示） -->
+<div class="mail-form" style="margin-top: 40px;">
+  
+    <h3>見積をメールで送信 / Send Quotation by Email</h3>
+    <form id="quotationMailForm">
+        <div class="form-group">
+            <label for="userName">お名前 / Your Name <span style="color:red;">*</span></label>
+            <input type="text" id="userName" name="userName" required>
+        </div>
+
+        <div class="form-group">
+            <label for="userEmail">メールアドレス / Your Email <span style="color:red;">*</span></label>
+            <input type="email" id="userEmail" name="userEmail" required>
+        </div>
+
+        <div class="form-group">
+            <label for="quotationContent">見積内容 / Quotation Details</label>
+            <textarea id="quotationContent" name="quotationContent" readonly style="min-height: 200px; font-family: monospace; line-height: 1.6;"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="message">追加メッセージ / Additional Message</label>
+            <textarea id="message" name="message" style="min-height: 100px;"></textarea>
+        </div>
+
+        <button type="submit" class="send-button">送信 / Send</button>
+        <div class="success-message" id="successMessage">
+            メールが送信されました！ / Email sent successfully!
+        </div>
+    </form>
+</div>
+
+<style>
+.mail-form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.mail-form h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.send-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 40px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.send-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+    display: none;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // 見積確認ボタンが押されたら、見積内容を自動入力してメールフォームを非表示
+    $('#optionform').on('submit', function() {
+        // メールフォームを非表示
+        $('.mail-form').hide();
+
+        setTimeout(function() {
+            // optionareaの内容を取得してquotationContentに設定
+            var quotationText = $('#optionarea').text().trim();
+            if (quotationText) {
+                $('#quotationContent').val(quotationText);
+            }
+        }, 500);
+    });
+
+    // メールフォーム送信
+    $('#quotationMailForm').on('submit', function(event) {
+        event.preventDefault();
+
+        var quotationContent = $('#quotationContent').val();
+        if (!quotationContent || quotationContent.trim() === '') {
+            alert('先に見積確認ボタンを押して、見積内容を確認してください。\nPlease click the quotation button first to generate the quotation.');
+            return;
+        }
+
+        var formData = {
+            userName: $('#userName').val(),
+            userEmail: $('#userEmail').val(),
+            quotationContent: quotationContent,
+            message: $('#message').val()
+        };
+
+        var $button = $('.send-button');
+        $button.prop('disabled', true);
+        $button.text('送信中... / Sending...');
+
+        $.ajax({
+            type: 'POST',
+            url: '/sendquotation',
+            contentType: 'application/json',
+            data: JSON.stringify(formData)
+        })
+        .done(function(response) {
+            $('#successMessage').fadeIn();
+            $('#userName').val('');
+            $('#userEmail').val('');
+            $('#message').val('');
+            setTimeout(function() {
+                $('#successMessage').fadeOut();
+            }, 5000);
+        })
+        .fail(function(xhr, status, error) {
+            alert('送信に失敗しました。もう一度お試しください。\nFailed to send. Please try again.');
+            console.error('Error:', error);
+        })
+        .always(function() {
+            $button.prop('disabled', false);
+            $button.text('送信 / Send');
+        });
+    });
+});
+</script>
 

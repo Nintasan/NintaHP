@@ -1,0 +1,30 @@
+# Protected Live2D Model - Amamizu Ai
+# Only allow access from same domain with proper headers
+
+Order Deny,Allow
+Deny from all
+
+# Allow access from same domain only
+SetEnvIf Referer "^https?://(www\.)?ninta\.main\.jp" allow_access
+Allow from env=allow_access
+
+# Allow localhost for development
+Allow from 127.0.0.1
+Allow from ::1
+
+# Block download tools and scrapers
+SetEnvIfNoCase User-Agent "wget" bad_bot
+SetEnvIfNoCase User-Agent "curl" bad_bot
+SetEnvIfNoCase User-Agent "HTTrack" bad_bot
+SetEnvIfNoCase User-Agent "download" bad_bot
+SetEnvIfNoCase User-Agent "teleport" bad_bot
+SetEnvIfNoCase User-Agent "webcopier" bad_bot
+Deny from env=bad_bot
+
+# Prevent caching
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, private, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+    Header set X-Robots-Tag "noindex, nofollow, noarchive"
+</IfModule>

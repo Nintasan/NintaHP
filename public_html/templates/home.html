@@ -2,9 +2,33 @@
 {% block content %}
 <main>
 	<div class="chapterType2">
-		
+
 		<h1>Home</h1>
-    	<img class="fig1" src="https://ninta.main.jp/images/icon2.png">
+
+		<!-- Live2D Avatar Display - Single Model with Switch Button -->
+		<div style="text-align: center; margin: 20px auto;">
+			<!-- Model Switch Buttons -->
+			<div style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center;">
+				<button id="btn-amamizu" class="button" style="margin: 0 10px; padding: 10px 20px; background: #67b7ea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 220px; height: 100px;">エクストラ / Extra</button>
+				<button id="btn-michelle" class="button" style="margin: 0 10px; padding: 10px 20px; background: #ddd; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 220px; height: 100px;">アンリミテッド / Unlimited</button>
+			</div>
+
+			<!-- Live2D Widget Container -->
+			<div id="live2d-widget" style="width: 800px; height: 1200px; margin: 0 auto; position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; overflow: hidden;">
+				<canvas id="live2d-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+			</div>
+		</div>
+
+		<!-- Load PIXI.js v6 (pixi-live2d-display requires v6) -->
+		<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+		<!-- Load Live2D Cubism Core -->
+		<script src="/static/live2d/Core/live2dcubismcore.min.js"></script>
+		<!-- Load pixi-live2d-display using unpkg CDN -->
+		<script src="https://unpkg.com/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+		<!-- Load widget script -->
+		<script src="/static/live2d/live2d-widget.js"></script>
+
+    	<img class="fig1" src="/static/images/icon2.png">
         <h1>Name: ニンタ(Ninta)</h1>
         <h3>I can take some commissions to design character art, rig Live2D avatar, channel art, icon and so on!<br>キャラクターデザイン、Live2Dモデリング、イラスト作成のご依頼お受けします。ご依頼の詳細はContactから。<br>
 		実績/past works:<br>
@@ -213,14 +237,14 @@
                 </li>
                 <li>
                     <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/d_gSRCxzKxU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/d_gSRCxzKxU?si=a2eZ-NciuCxN6y4o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
                     
                     
                 </li>
             <li>
                     <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/k4lmJiDOHxE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/k4lmJiDOHxE?si=NLTmGNIUJGmPeXCt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
                     
                     
@@ -231,51 +255,26 @@
     
          <div class="chapterType2">
 			<h1>ご依頼 / commission</h1>
-			<h3>Skeb discount until 30/SEP/2024</h3>
-			<p>If you requested a Skeb commission before, I discount the same price of the Skeb commission from a VTuber making (design&rig) commission!!!<br>
-			Let me know you commissioned me before through Skeb, when you commissionme to make a new VTuber!</p>
-			<h3>Get discouts!!!→ <a class="button" href="https://skeb.jp/@ninta_Mk3">Skeb commission</a></h3>
+			<p>
+			{% include "checkbox.html" %}
+			</p>
 
-			<!-- waiting lists -->
-				<p>
-					{% include "WaitList.html" %}
-				</p>
 
-				<p>
-					<a class="button3" href="javascript:void(0)" id="category_折りたたみC" onclick="show('折りたたみC');">Open Google calender</a>
-					<div  id="layer_折りたたみC" style="display: none;position:relative;margin-left:15pt" class="close">
-						{% include "googlecalender.html" %}
-					</div>
-					</p>
+			<h2>Contact with E-mail: ninta.illustration@gmail.com</h2>
 
 				<h2>Live2Dプラン表 / Live2D plan sheet</h2>
 
 				<p>
-				<a class="button3" href="javascript:void(0)" id="category_折りたたみB" onclick="show('折りたたみB');">プラン表/ Plan sheet</a>
-            	<div  id="layer_折りたたみB" style="display: none;position:relative;margin-left:15pt" class="close">
 					{% include "plan.html" %}
-				</div>
 				</p>
 
-				{% include "checkbox.html" %}
 
-				<p>リピーターの方、活動実績のある方、企業様の場合は実績を考慮させていただき、なるべくお安くご依頼をお受けさせていただきます。<br>
-					Clients who commissioned me before, who has many followers or have experience of streaming, or who are belonging to companies are able to take much discounts.</p>
-				<p>
-
-				<h2>ご連絡 / Contact</h2>
-
-				<h3>Googleフォームで依頼内容を送る / Send Google forms</h3>
-				<p><a class="button" href="javascript:void(0)" id="category_折りたたみA" onclick="show('折りたたみA');"> Open Google form</a></p>
-				<div  id="layer_折りたたみA" style="display: none;position:relative;margin-left:15pt;" class="close">
-					<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd4I8yWToEeZWh3GFI30-1rDU2czehx-Tm8FcjbVmwXCQhtgA/viewform?embedded=true" width="100%" height="800px" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-				</div>
 				<div class="clear"></div>
     	</div>
          
         <div class="clear"></div>
   
-	<div class="chapterType2">
+	<div class="chapterType2" style="display: none;">
 	<div id = "seetagareas">
 
 		<h2>Ninta's works</h2>

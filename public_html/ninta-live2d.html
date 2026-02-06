@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ninta2DCo Live2D</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: sans-serif; }
+    #live2d-widget { width: 100%; height: 100vh; position: relative; display: flex; justify-content: center; align-items: center; }
+    #live2d-canvas { width: 100%; height: 100%; }
+    .watermark { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; pointer-events: none; z-index: 1000; }
+    .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 18px; text-align: center; }
+    .error { color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <div id="live2d-widget">
+    <canvas id="live2d-canvas"></canvas>
+    <div class="watermark">© Ninta 2024</div>
+    <div class="loading" id="loading">Loading Ninta2DCo...</div>
+  </div>
+
+  <!-- PIXI.js v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+  <!-- Live2D Cubism Core -->
+  <script src="/static/live2d/Core/live2dcubismcore.min.js"></script>
+  <!-- pixi-live2d-display v0.4 for Cubism 4 -->
+  <script src="https://unpkg.com/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+
+  <script>
+    (function() {
+      const MODEL_PATH = '/static/live2d/Ninta2DCo_VTuber/Ninta2DCo_VTuber.model3.json';
+      let app, currentModel;
+
+      function updateStatus(msg, isError) {
+        const el = document.getElementById('loading');
+        el[isError ? 'innerHTML' : 'textContent'] = isError ? '<span class="error">' + msg + '</span>' : msg;
+        console.log(msg);
+      }
+
+      async function init() {
+        try {
+          updateStatus('ライブラリを読み込み中...');
+          await new Promise((resolve, reject) => {
+            let attempts = 0;
+            const check = setInterval(() => {
+              if (window.PIXI && window.Live2DCubismCore && window.PIXI.live2d && window.PIXI.live2d.Live2DModel) {
+                clearInterval(check);
+                resolve();
+              } else if (++attempts >= 50) {
+                clearInterval(check);
+                reject(new Error('ライブラリ読み込みタイムアウト'));
+              }
+            }, 100);
+          });
+
+          updateStatus('PIXI初期化中...');
+          const canvas = document.getElementById('live2d-canvas');
+          const container = document.getElementById('live2d-widget');
+          app = new PIXI.Application({
+            view: canvas,
+            width: container.clientWidth,
+            height: container.clientHeight,
+            backgroundAlpha: 0,
+            antialias: true,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true
+          });
+
+          updateStatus('モデル読み込み中...');
+          const origFetch = window.fetch;
+          window.fetch = (url, opts = {}) => {
+            if (url.includes('/static/live2d/Ninta2DCo_VTuber/')) {
+              opts.headers = opts.headers || {};
+              opts.headers['X-Requested-With'] = 'XMLHttpRequest';
+            }
+            return origFetch(url, opts);
+          };
+
+          currentModel = await PIXI.live2d.Live2DModel.from(MODEL_PATH);
+          window.fetch = origFetch;
+
+          if (!currentModel) throw new Error('モデル読み込み失敗');
+
+          updateStatus('セットアップ中...');
+          const scale = Math.min(app.screen.width / currentModel.width, app.screen.height / currentModel.height) * 1.15;
+          currentModel.scale.set(scale);
+          currentModel.x = app.screen.width / 2;
+          currentModel.y = app.screen.height / 2;
+          currentModel.anchor.set(0.5, 0.5);
+          app.stage.addChild(currentModel);
+
+          let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+          container.addEventListener('mousemove', (e) => {
+            if (!currentModel?.internalModel) return;
+            const r = container.getBoundingClientRect();
+            targetX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+            targetY = ((e.clientY - r.top) / r.height - 0.5) * 2;
+          });
+          container.addEventListener('mouseleave', () => { targetX = targetY = 0; });
+          container.addEventListener('touchmove', (e) => {
+            if (!currentModel?.internalModel) return;
+            e.preventDefault();
+            const t = e.touches[0], r = container.getBoundingClientRect();
+            targetX = ((t.clientX - r.left) / r.width - 0.5) * 2;
+            targetY = ((t.clientY - r.top) / r.height - 0.5) * 2;
+          }, { passive: false });
+          container.addEventListener('touchend', () => { targetX = targetY = 0; });
+
+          app.ticker.add(() => {
+            if (!currentModel?.internalModel?.coreModel) return;
+            mouseX = mouseX * 0.8 + targetX * 0.2;
+            mouseY = mouseY * 0.8 + targetY * 0.2;
+            try {
+              const m = currentModel.internalModel.coreModel;
+              m.setParameterValueById('ParamAngleX', mouseX * 30);
+              m.setParameterValueById('ParamAngleY', -mouseY * 30);
+              m.setParameterValueById('ParamAngleZ', mouseX * 15);
+              m.setParameterValueById('ParamBodyAngleX', mouseX * 10);
+              m.setParameterValueById('ParamBodyAngleY', -mouseY * 10);
+              m.setParameterValueById('ParamEyeBallX', mouseX);
+              m.setParameterValueById('ParamEyeBallY', -mouseY);
+            } catch (e) {}
+          });
+
+          window.addEventListener('resize', () => {
+            app.renderer.resize(container.clientWidth, container.clientHeight);
+            if (currentModel) {
+              const scale = Math.min(app.screen.width / currentModel.width, app.screen.height / currentModel.height) * 1.125;
+              currentModel.scale.set(scale);
+              currentModel.x = app.screen.width / 2;
+              currentModel.y = app.screen.height / 2;
+            }
+          });
+
+          document.getElementById('loading').style.display = 'none';
+        } catch (error) {
+          console.error(error);
+          updateStatus('エラー: ' + error.message, true);
+        }
+      }
+
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
+
+      // Prevent right-click context menu (which includes Inspect Element option)
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+      });
+
+      // Disable common keyboard shortcuts for opening developer tools and view source
+      document.addEventListener('keydown', function(e) {
+        // F12 key
+        if (e.keyCode === 123) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl + Shift + I (Inspect)
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl + Shift + J (Console)
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl + Shift + C (Inspect Element)
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl + U (View Source)
+        if (e.ctrlKey && e.keyCode === 85) {
+          e.preventDefault();
+          return false;
+        }
+        // Cmd + Option + I on Mac (equivalent to Ctrl+Shift+I)
+        if (e.metaKey && e.altKey && e.keyCode === 73) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // テキスト選択・ドラッグ無効化
+      document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+      });
+      document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+      });
+
+      // Developer Tools Detection
+      setInterval(() => {
+        if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+          console.clear();
+          console.log('%c⚠️ WARNING', 'color: red; font-size: 20px; font-weight: bold;');
+          console.log('%cThis content is protected by copyright.', 'font-size: 14px;');
+          console.log('%cUnauthorized downloading or use is prohibited.', 'font-size: 14px;');
+          console.log('%c© Ninta 2024. All Rights Reserved.', 'font-size: 12px; color: #888;');
+        }
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>

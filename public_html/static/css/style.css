@@ -2,6 +2,40 @@
 p{
     padding-left: 10px;
 }
+
+/* Live2D Watermark */
+.live2d-watermark {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 9999;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.live2d-watermark-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 48px;
+    color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    white-space: nowrap;
+}
 .slideTgas{
 	width: 98%;
 	overflow: scroll;
@@ -222,6 +256,25 @@ html{overflow-x:hidden;}
 
 @media (max-width: 768px){
 /*共通*/
+
+/*Live2D widget container*/
+#live2d-widget {
+	width: 95% !important;
+	max-width: 95% !important;
+	height: auto !important;
+	aspect-ratio: 2/3 !important;
+	min-height: 600px !important;
+	margin: 0 auto !important;
+	position: relative !important;
+	overflow: hidden !important;
+}
+
+#live2d-canvas {
+	position: absolute !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+}
 
 /*スマホ メニュー*/
 

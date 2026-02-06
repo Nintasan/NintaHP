@@ -1,0 +1,16 @@
+# Protect Ninta2DCo texture files from direct download
+Order Deny,Allow
+Deny from all
+
+# Allow access from ninta.main.jp and carrd.co
+SetEnvIf Referer "^https?://(www\.)?ninta\.main\.jp" allow_ref
+SetEnvIf Referer "^https?://.*\.carrd\.co" allow_ref
+Allow from env=allow_ref
+
+# Block download tools
+SetEnvIfNoCase User-Agent "wget" bad_bot
+SetEnvIfNoCase User-Agent "curl" bad_bot
+SetEnvIfNoCase User-Agent "HTTrack" bad_bot
+SetEnvIfNoCase User-Agent "download" bad_bot
+SetEnvIfNoCase User-Agent "grab" bad_bot
+Deny from env=bad_bot

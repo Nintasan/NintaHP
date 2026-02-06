@@ -8,7 +8,7 @@
     <meta name="twitter:url" content="https://ninta.main.jp" >
     <meta name="twitter:title" content="NintaHP" >
     <meta name="twitter:description" content="Ninta's Live2D and art portfolios" >
-    <meta name="twitter:image" content="https://ninta.main.jp/images/icon2.png" >
+    <meta name="twitter:image" content="https://ninta.main.jp/static/images/icon2.png" >
     <meta name="twitter:site" content="@ninta_Mk3" >
 
 	<title> {{ title }} </title>
@@ -62,7 +62,48 @@
 	
 	{% block content %}{% endblock %}
     
-	
+
 	{% include "fooder.html" %}
+
+	<script type="text/javascript">
+	// Prevent right-click context menu (which includes Inspect Element option)
+	document.addEventListener('contextmenu', function(e) {
+		e.preventDefault();
+	});
+
+	// Disable common keyboard shortcuts for opening developer tools and view source
+	document.addEventListener('keydown', function(e) {
+		// F12 key
+		if (e.keyCode === 123) {
+			e.preventDefault();
+			return false;
+		}
+		// Ctrl + Shift + I (Inspect)
+		if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+			e.preventDefault();
+			return false;
+		}
+		// Ctrl + Shift + J (Console)
+		if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+			e.preventDefault();
+			return false;
+		}
+		// Ctrl + Shift + C (Inspect Element)
+		if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+			e.preventDefault();
+			return false;
+		}
+		// Ctrl + U (View Source)
+		if (e.ctrlKey && e.keyCode === 85) {
+			e.preventDefault();
+			return false;
+		}
+		// Cmd + Option + I on Mac (equivalent to Ctrl+Shift+I)
+		if (e.metaKey && e.altKey && e.keyCode === 73) {
+			e.preventDefault();
+			return false;
+		}
+	});
+	</script>
 </body>
 </html>

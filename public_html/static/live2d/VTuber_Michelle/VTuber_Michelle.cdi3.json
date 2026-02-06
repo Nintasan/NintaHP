@@ -1,0 +1,2167 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "Param181",
+			"GroupId": "",
+			"Name": "Cry"
+		},
+		{
+			"Id": "Param116",
+			"GroupId": "",
+			"Name": "TearDroppingL"
+		},
+		{
+			"Id": "Param83",
+			"GroupId": "",
+			"Name": "TearDroppingR"
+		},
+		{
+			"Id": "Param119",
+			"GroupId": "",
+			"Name": "TearScaleL"
+		},
+		{
+			"Id": "Param121",
+			"GroupId": "",
+			"Name": "TearScaleR"
+		},
+		{
+			"Id": "Param120",
+			"GroupId": "",
+			"Name": "TearOpacityL"
+		},
+		{
+			"Id": "Param122",
+			"GroupId": "",
+			"Name": "TearOpacityR"
+		},
+		{
+			"Id": "Param88",
+			"GroupId": "",
+			"Name": "CryEyeCloseR"
+		},
+		{
+			"Id": "Param165",
+			"GroupId": "",
+			"Name": "CryEyeCloseL"
+		},
+		{
+			"Id": "Param89",
+			"GroupId": "",
+			"Name": "CryEyeSmileR"
+		},
+		{
+			"Id": "Param166",
+			"GroupId": "",
+			"Name": "CryEyeSmileL"
+		},
+		{
+			"Id": "Param86",
+			"GroupId": "",
+			"Name": "TearPhyR1"
+		},
+		{
+			"Id": "Param167",
+			"GroupId": "",
+			"Name": "TearPhyL1"
+		},
+		{
+			"Id": "Param87",
+			"GroupId": "",
+			"Name": "TearPhyR2"
+		},
+		{
+			"Id": "Param168",
+			"GroupId": "",
+			"Name": "TearPhyL2"
+		},
+		{
+			"Id": "Param117",
+			"GroupId": "",
+			"Name": "CryToggle"
+		},
+		{
+			"Id": "Param90",
+			"GroupId": "",
+			"Name": "TearPhyX1"
+		},
+		{
+			"Id": "Param114",
+			"GroupId": "",
+			"Name": "TearPhyX2"
+		},
+		{
+			"Id": "SphereDeformerOriginal",
+			"GroupId": "ParamGroup23",
+			"Name": "DeformerOriginal"
+		},
+		{
+			"Id": "SphereX",
+			"GroupId": "ParamGroup23",
+			"Name": "SphereX"
+		},
+		{
+			"Id": "SphereY",
+			"GroupId": "ParamGroup23",
+			"Name": "SphereY"
+		},
+		{
+			"Id": "SphereZ",
+			"GroupId": "ParamGroup23",
+			"Name": "SphereZ"
+		},
+		{
+			"Id": "ShperePosition",
+			"GroupId": "ParamGroup23",
+			"Name": "ShperePosition"
+		},
+		{
+			"Id": "GuideOriginal",
+			"GroupId": "ParamGroup23",
+			"Name": "GuideOriginal"
+		},
+		{
+			"Id": "Param57",
+			"GroupId": "ParamGroup26",
+			"Name": "Rotation"
+		},
+		{
+			"Id": "Param8",
+			"GroupId": "ParamGroup16",
+			"Name": "ClockPosition"
+		},
+		{
+			"Id": "Param68",
+			"GroupId": "ParamGroup16",
+			"Name": "3D clock"
+		},
+		{
+			"Id": "Param77",
+			"GroupId": "ParamGroup16",
+			"Name": "ClockTickness"
+		},
+		{
+			"Id": "Param75",
+			"GroupId": "ParamGroup16",
+			"Name": "RotationX"
+		},
+		{
+			"Id": "Param74",
+			"GroupId": "ParamGroup16",
+			"Name": "RotationY"
+		},
+		{
+			"Id": "Param76",
+			"GroupId": "ParamGroup16",
+			"Name": "RotationZ"
+		},
+		{
+			"Id": "Param82",
+			"GroupId": "ParamGroup16",
+			"Name": "OpenLid"
+		},
+		{
+			"Id": "Param53",
+			"GroupId": "ParamGroup16",
+			"Name": "Clock1Rotation"
+		},
+		{
+			"Id": "Param54",
+			"GroupId": "ParamGroup16",
+			"Name": "Clock2Rotation"
+		},
+		{
+			"Id": "Param55",
+			"GroupId": "ParamGroup16",
+			"Name": "Clock3Rotation"
+		},
+		{
+			"Id": "Param37",
+			"GroupId": "ParamGroup22",
+			"Name": "SphereX"
+		},
+		{
+			"Id": "Param39",
+			"GroupId": "ParamGroup22",
+			"Name": "SphereY"
+		},
+		{
+			"Id": "Param43",
+			"GroupId": "ParamGroup22",
+			"Name": "SphereZ"
+		},
+		{
+			"Id": "Param33",
+			"GroupId": "ParamGroup22",
+			"Name": "SphereGlue"
+		},
+		{
+			"Id": "Param18",
+			"GroupId": "ParamGroup21",
+			"Name": "CogWeel moment"
+		},
+		{
+			"Id": "ParamCogWeelX",
+			"GroupId": "ParamGroup21",
+			"Name": "CogWeelX"
+		},
+		{
+			"Id": "ParamCogWeelY",
+			"GroupId": "ParamGroup21",
+			"Name": "CogWeelY"
+		},
+		{
+			"Id": "Param28",
+			"GroupId": "ParamGroup21",
+			"Name": "CogweelSideFront"
+		},
+		{
+			"Id": "Param32",
+			"GroupId": "ParamGroup21",
+			"Name": "CogweelSideBack"
+		},
+		{
+			"Id": "Param31",
+			"GroupId": "ParamGroup21",
+			"Name": "CogweelBack"
+		},
+		{
+			"Id": "Param58",
+			"GroupId": "ParamGroup",
+			"Name": "BlendShapesSaving"
+		},
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "ParamGroup",
+			"Name": "AngleX"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "ParamGroup",
+			"Name": "AngleY"
+		},
+		{
+			"Id": "Param112",
+			"GroupId": "ParamGroup",
+			"Name": "NeckL"
+		},
+		{
+			"Id": "Param113",
+			"GroupId": "ParamGroup",
+			"Name": "NeckR"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "ParamGroup",
+			"Name": "AngleZ"
+		},
+		{
+			"Id": "Param38",
+			"GroupId": "ParamGroup",
+			"Name": "ReflectParam"
+		},
+		{
+			"Id": "Param130",
+			"GroupId": "ParamGroup",
+			"Name": "BrendShapeReflect"
+		},
+		{
+			"Id": "Param34",
+			"GroupId": "ParamGroup",
+			"Name": "Angle+15"
+		},
+		{
+			"Id": "Param36",
+			"GroupId": "ParamGroup",
+			"Name": "Angle-15"
+		},
+		{
+			"Id": "Param",
+			"GroupId": "ParamGroup",
+			"Name": "HairZ1 (ConAngleZ)"
+		},
+		{
+			"Id": "Param2",
+			"GroupId": "ParamGroup",
+			"Name": "HairZ2 (ConAngleZ)"
+		},
+		{
+			"Id": "Param3",
+			"GroupId": "ParamGroup",
+			"Name": "HairZ3 (ConAngleZ)"
+		},
+		{
+			"Id": "ParamAngleZ3",
+			"GroupId": "ParamGroup",
+			"Name": "AngleZBuffer2"
+		},
+		{
+			"Id": "ParamAngleZ2",
+			"GroupId": "ParamGroup",
+			"Name": "AngleZBuffer1"
+		},
+		{
+			"Id": "Param9",
+			"GroupId": "ParamGroup",
+			"Name": "3Dcogweel"
+		},
+		{
+			"Id": "Param59",
+			"GroupId": "ParamGroup24",
+			"Name": "HeadPartsAngle"
+		},
+		{
+			"Id": "Param67",
+			"GroupId": "ParamGroup5",
+			"Name": "Abjust"
+		},
+		{
+			"Id": "Param40",
+			"GroupId": "ParamGroup5",
+			"Name": "ShoulderX (ConBodyX)"
+		},
+		{
+			"Id": "Param41",
+			"GroupId": "ParamGroup5",
+			"Name": "ShoulderY (ConBodyY)"
+		},
+		{
+			"Id": "WaistZ",
+			"GroupId": "ParamGroup5",
+			"Name": "ShoulderZ (ConBodyZ)"
+		},
+		{
+			"Id": "WaistX",
+			"GroupId": "ParamGroup5",
+			"Name": "WaistX (ConBodyX)"
+		},
+		{
+			"Id": "WaistX2",
+			"GroupId": "ParamGroup5",
+			"Name": "WaistZ (ConBodyZ)"
+		},
+		{
+			"Id": "Param42",
+			"GroupId": "ParamGroup5",
+			"Name": "WaistY (ConBodyY)"
+		},
+		{
+			"Id": "ParamBodyAngleXBuffer2",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyXBuffer3"
+		},
+		{
+			"Id": "ParamBodyAngleXBuffer3",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyXBuffer2"
+		},
+		{
+			"Id": "ParamBodyAngleXBuffer1",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyXBuffer1"
+		},
+		{
+			"Id": "ParamBodyAngleYBuffer2",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyYBuffer2"
+		},
+		{
+			"Id": "ParamBodyAngleYBuffer1",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyYBuffer1"
+		},
+		{
+			"Id": "ParamBodyAngleZBuffer3",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyZBuffer3"
+		},
+		{
+			"Id": "ParamBodyAngleZBuffer2",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyZBuffer2"
+		},
+		{
+			"Id": "ParamBodyAngleZBuffer1",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyZBuffer1"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyZ"
+		},
+		{
+			"Id": "ParamBodyAngleZ2",
+			"GroupId": "ParamGroup5",
+			"Name": "LegZ"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyX"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "ParamGroup5",
+			"Name": "BodyY"
+		},
+		{
+			"Id": "Param139",
+			"GroupId": "ParamGroup5",
+			"Name": "Absoption1L"
+		},
+		{
+			"Id": "Param143",
+			"GroupId": "ParamGroup5",
+			"Name": "Absoption1R"
+		},
+		{
+			"Id": "Param141",
+			"GroupId": "ParamGroup5",
+			"Name": "Absoption2L"
+		},
+		{
+			"Id": "Param142",
+			"GroupId": "ParamGroup5",
+			"Name": "Absoption2R"
+		},
+		{
+			"Id": "ParamBodyPositionX",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionX"
+		},
+		{
+			"Id": "ParamBodyPositionY",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionY"
+		},
+		{
+			"Id": "ParamBodyPositionZ",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionZ"
+		},
+		{
+			"Id": "ParamBodyPositionLX",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionLX"
+		},
+		{
+			"Id": "ParamBodyPositionLX2",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionLY"
+		},
+		{
+			"Id": "ParamBodyPositionXL2",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionLLeg"
+		},
+		{
+			"Id": "ParamBodyPositionLY",
+			"GroupId": "ParamGroup20",
+			"Name": "BodyPositionY"
+		},
+		{
+			"Id": "LeanForward",
+			"GroupId": "ParamGroup19",
+			"Name": "LeanForward"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeOpenL"
+		},
+		{
+			"Id": "ParamEyeLSmile",
+			"GroupId": "ParamGroup2",
+			"Name": "SmileL"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeOpenR"
+		},
+		{
+			"Id": "ParamEyeRSmile",
+			"GroupId": "ParamGroup2",
+			"Name": "SmileR"
+		},
+		{
+			"Id": "Param118",
+			"GroupId": "ParamGroup2",
+			"Name": "PetEyes"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeballX"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeballY"
+		},
+		{
+			"Id": "EyeLPhy",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeJigglyL1"
+		},
+		{
+			"Id": "EyeL2Phy",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeJigglyL2"
+		},
+		{
+			"Id": "EyeLPhy2",
+			"GroupId": "ParamGroup2",
+			"Name": "IrisJigglyL1"
+		},
+		{
+			"Id": "EyeLPhy5",
+			"GroupId": "ParamGroup2",
+			"Name": "IrisJigglyL2"
+		},
+		{
+			"Id": "EyeL2Phy2",
+			"GroupId": "ParamGroup2",
+			"Name": "IrisJigglyL3"
+		},
+		{
+			"Id": "EyeR1Phy",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeJigglyR1"
+		},
+		{
+			"Id": "EyeR2Phy",
+			"GroupId": "ParamGroup2",
+			"Name": "EyeJigglyR2"
+		},
+		{
+			"Id": "EyeLPhy7",
+			"GroupId": "ParamGroup2",
+			"Name": "IrisJigglyR1"
+		},
+		{
+			"Id": "EyeLPhy6",
+			"GroupId": "ParamGroup2",
+			"Name": "IrisJigglyR2"
+		},
+		{
+			"Id": "EyeL2Phy5",
+			"GroupId": "ParamGroup2",
+			"Name": "IrisJigglyR3"
+		},
+		{
+			"Id": "EyeLPhy3",
+			"GroupId": "ParamGroup2",
+			"Name": "EyelashL1"
+		},
+		{
+			"Id": "EyeL2Phy3",
+			"GroupId": "ParamGroup2",
+			"Name": "EyelashL2"
+		},
+		{
+			"Id": "EyeLPhy4",
+			"GroupId": "ParamGroup2",
+			"Name": "EyelashR1"
+		},
+		{
+			"Id": "EyeL2Phy4",
+			"GroupId": "ParamGroup2",
+			"Name": "EyelashR2"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "ParamGroup4",
+			"Name": "MouthForm"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "ParamGroup4",
+			"Name": "MouthOpen"
+		},
+		{
+			"Id": "Param27",
+			"GroupId": "ParamGroup4",
+			"Name": "ExpsGoodBad"
+		},
+		{
+			"Id": "Param29",
+			"GroupId": "ParamGroup4",
+			"Name": "ExpsStrongWeak"
+		},
+		{
+			"Id": "Param17",
+			"GroupId": "ParamGroup4",
+			"Name": "MouthAngleR"
+		},
+		{
+			"Id": "Param16",
+			"GroupId": "ParamGroup4",
+			"Name": "MouthAngleL"
+		},
+		{
+			"Id": "ParamPuffedCheek",
+			"GroupId": "ParamGroup4",
+			"Name": "Puff"
+		},
+		{
+			"Id": "ParamPuffedCheek5",
+			"GroupId": "ParamGroup4",
+			"Name": "PuffMouth"
+		},
+		{
+			"Id": "ParamPuffedCheek4",
+			"GroupId": "ParamGroup4",
+			"Name": "Puff"
+		},
+		{
+			"Id": "ParamPuffedCheek2",
+			"GroupId": "ParamGroup4",
+			"Name": "PuffFaceR"
+		},
+		{
+			"Id": "ParamPuffedCheek3",
+			"GroupId": "ParamGroup4",
+			"Name": "PuffFaceL"
+		},
+		{
+			"Id": "ParamTangue",
+			"GroupId": "ParamGroup4",
+			"Name": "Tangue"
+		},
+		{
+			"Id": "ParamAngleXOutlet",
+			"GroupId": "ParamGroup9",
+			"Name": "AngleXOutlet"
+		},
+		{
+			"Id": "Param229",
+			"GroupId": "ParamGroup9",
+			"Name": "MouthAngleR 0"
+		},
+		{
+			"Id": "Param230",
+			"GroupId": "ParamGroup9",
+			"Name": "MouthAngleL 0"
+		},
+		{
+			"Id": "Param231",
+			"GroupId": "ParamGroup9",
+			"Name": "MouthAngleR"
+		},
+		{
+			"Id": "Param232",
+			"GroupId": "ParamGroup9",
+			"Name": "MouthAngleL"
+		},
+		{
+			"Id": "ParamMouthFunnel",
+			"GroupId": "ParamGroup9",
+			"Name": "VB MouthFunnel"
+		},
+		{
+			"Id": "ParamMouthPressLipOpen",
+			"GroupId": "ParamGroup9",
+			"Name": "VB MouthPressLipOpen"
+		},
+		{
+			"Id": "ParamMouthShrug",
+			"GroupId": "ParamGroup9",
+			"Name": "VB MouthShrug"
+		},
+		{
+			"Id": "ParamMouthPucker",
+			"GroupId": "ParamGroup9",
+			"Name": "VB MouthPucker"
+		},
+		{
+			"Id": "ParamTongueOut",
+			"GroupId": "ParamGroup9",
+			"Name": "VB TongueOut"
+		},
+		{
+			"Id": "ParamJawOpen",
+			"GroupId": "ParamGroup9",
+			"Name": "VB JawOpen"
+		},
+		{
+			"Id": "MouthX",
+			"GroupId": "ParamGroup9",
+			"Name": "VB MouthX"
+		},
+		{
+			"Id": "AngryExpL",
+			"GroupId": "ParamGroup13",
+			"Name": "AngryExpL (EyesForm)"
+		},
+		{
+			"Id": "AngryExpR",
+			"GroupId": "ParamGroup13",
+			"Name": "AngryExpR (EyesForm)"
+		},
+		{
+			"Id": "AngryExp",
+			"GroupId": "ParamGroup13",
+			"Name": "AngryExp"
+		},
+		{
+			"Id": "sparklingExpL",
+			"GroupId": "ParamGroup13",
+			"Name": "SparklingExpL (EyesForm)"
+		},
+		{
+			"Id": "Sad3",
+			"GroupId": "ParamGroup13",
+			"Name": "SparklingExpR (EyesForm)"
+		},
+		{
+			"Id": "Sad4",
+			"GroupId": "ParamGroup13",
+			"Name": "SperklingExp"
+		},
+		{
+			"Id": "SurprisedExpL",
+			"GroupId": "ParamGroup13",
+			"Name": "SurprisedExpL (EyesForm)"
+		},
+		{
+			"Id": "Suprised3",
+			"GroupId": "ParamGroup13",
+			"Name": "SurprisedExpR (EyesForm)"
+		},
+		{
+			"Id": "Suprised4",
+			"GroupId": "ParamGroup13",
+			"Name": "SurprisedExp"
+		},
+		{
+			"Id": "Param107",
+			"GroupId": "ParamGroup13",
+			"Name": "HappyExpL (EyesForm)"
+		},
+		{
+			"Id": "Param108",
+			"GroupId": "ParamGroup13",
+			"Name": "HappyExpR (EyesForm)"
+		},
+		{
+			"Id": "Param109",
+			"GroupId": "ParamGroup13",
+			"Name": "HappyExp"
+		},
+		{
+			"Id": "Param110",
+			"GroupId": "ParamGroup13",
+			"Name": "CryExpL (EyesForm)"
+		},
+		{
+			"Id": "Param111",
+			"GroupId": "ParamGroup13",
+			"Name": "CryExpR (EyesForm)"
+		},
+		{
+			"Id": "CryExp",
+			"GroupId": "ParamGroup13",
+			"Name": "CryExp (EyesForm)"
+		},
+		{
+			"Id": "Param24",
+			"GroupId": "ParamGroup13",
+			"Name": "CheekExp (EyesForm)"
+		},
+		{
+			"Id": "Param25",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleRAll1"
+		},
+		{
+			"Id": "Param44",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleLAll1"
+		},
+		{
+			"Id": "Param35",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleRAll2"
+		},
+		{
+			"Id": "Param48",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleLAll2"
+		},
+		{
+			"Id": "Param50",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleRPart1"
+		},
+		{
+			"Id": "Param49",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleLPart1"
+		},
+		{
+			"Id": "Param51",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleRPart2"
+		},
+		{
+			"Id": "Param52",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleLPart2"
+		},
+		{
+			"Id": "Param70",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleLAll1"
+		},
+		{
+			"Id": "Param72",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleRAll1"
+		},
+		{
+			"Id": "Param71",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleLAll2"
+		},
+		{
+			"Id": "Param73",
+			"GroupId": "ParamGroup7",
+			"Name": "EarsJiggleRAll2"
+		},
+		{
+			"Id": "ParamBrowRAnglePhy",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowAngleR"
+		},
+		{
+			"Id": "ParamBrowLAnglePhy",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowAngleL"
+		},
+		{
+			"Id": "ParamBrowLY",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowAngleYR"
+		},
+		{
+			"Id": "ParamBrowRY",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowAngleYL"
+		},
+		{
+			"Id": "ParamBrowLX",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowAngleLX Origin"
+		},
+		{
+			"Id": "ParamBrowRX",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowAngleRX Origin"
+		},
+		{
+			"Id": "ParamBrowLForm",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowFormLX Origin"
+		},
+		{
+			"Id": "ParamBrowRForm",
+			"GroupId": "ParamGroup3",
+			"Name": "BrowFormRX Origin"
+		},
+		{
+			"Id": "ParamBrowInnerUp",
+			"GroupId": "ParamGroup14",
+			"Name": "BrowInnerUp"
+		},
+		{
+			"Id": "HairMoveFrontX3",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFX1-1"
+		},
+		{
+			"Id": "HairMoveFrontX4",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFX1-2"
+		},
+		{
+			"Id": "HairMoveFrontX7",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFX1-0"
+		},
+		{
+			"Id": "HairMoveFrontX5",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFX1-1"
+		},
+		{
+			"Id": "HairMoveFrontX6",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFX1-2"
+		},
+		{
+			"Id": "Param92",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFX1-3"
+		},
+		{
+			"Id": "HairMoveFrontY1",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFY1-1"
+		},
+		{
+			"Id": "HairMoveFrontY2",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFY1-2"
+		},
+		{
+			"Id": "HairMoveFrontY3",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFY1-3"
+		},
+		{
+			"Id": "Param45",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFY1-4"
+		},
+		{
+			"Id": "Param46",
+			"GroupId": "ParamGroup17",
+			"Name": "HairPhyFY1-5"
+		},
+		{
+			"Id": "Param134",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBX1"
+		},
+		{
+			"Id": "Param135",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBX2"
+		},
+		{
+			"Id": "Param153",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBX3"
+		},
+		{
+			"Id": "Param154",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBX4"
+		},
+		{
+			"Id": "Param93",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBY1"
+		},
+		{
+			"Id": "Param94",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBY2"
+		},
+		{
+			"Id": "Param95",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBY3"
+		},
+		{
+			"Id": "Param96",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyBY4"
+		},
+		{
+			"Id": "Param132",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyZ1"
+		},
+		{
+			"Id": "Param133",
+			"GroupId": "ParamGroup6",
+			"Name": "HairPhyZ2"
+		},
+		{
+			"Id": "ArmLS",
+			"GroupId": "ParamGroup11",
+			"Name": "ArmPhyY"
+		},
+		{
+			"Id": "Param4",
+			"GroupId": "ParamGroup11",
+			"Name": "ForearmPhyY"
+		},
+		{
+			"Id": "Param5",
+			"GroupId": "ParamGroup11",
+			"Name": "HandPhyY"
+		},
+		{
+			"Id": "FingerL",
+			"GroupId": "ParamGroup11",
+			"Name": "FingerPhyY"
+		},
+		{
+			"Id": "FingerL2",
+			"GroupId": "ParamGroup11",
+			"Name": "FingerPhy2Y"
+		},
+		{
+			"Id": "ArmLS2",
+			"GroupId": "ParamGroup11",
+			"Name": "ArmPhyX"
+		},
+		{
+			"Id": "Param7",
+			"GroupId": "ParamGroup11",
+			"Name": "ForearmPhyX"
+		},
+		{
+			"Id": "Param6",
+			"GroupId": "ParamGroup11",
+			"Name": "HandPhyRX"
+		},
+		{
+			"Id": "FingerL3",
+			"GroupId": "ParamGroup11",
+			"Name": "FingerPhyRX"
+		},
+		{
+			"Id": "Param78",
+			"GroupId": "ParamGroup11",
+			"Name": "ForearmPhyLX"
+		},
+		{
+			"Id": "FingerL4",
+			"GroupId": "ParamGroup11",
+			"Name": "FingerPhyL2X"
+		},
+		{
+			"Id": "Param15",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyX1"
+		},
+		{
+			"Id": "Param19",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyX2"
+		},
+		{
+			"Id": "Param20",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyX3"
+		},
+		{
+			"Id": "Param21",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyX4"
+		},
+		{
+			"Id": "Param23",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyX5"
+		},
+		{
+			"Id": "Param26",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyLightX"
+		},
+		{
+			"Id": "Param115",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyLightY"
+		},
+		{
+			"Id": "Param10",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyY1"
+		},
+		{
+			"Id": "Param11",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyY2"
+		},
+		{
+			"Id": "Param12",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyY3"
+		},
+		{
+			"Id": "Param13",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyY4"
+		},
+		{
+			"Id": "Param14",
+			"GroupId": "ParamGroup8",
+			"Name": "ClothesPhyY5"
+		},
+		{
+			"Id": "Param30",
+			"GroupId": "ParamGroup12",
+			"Name": "BreastPhyY1"
+		},
+		{
+			"Id": "Param91",
+			"GroupId": "ParamGroup12",
+			"Name": "BreastPhyY2"
+		},
+		{
+			"Id": "Param98",
+			"GroupId": "ParamGroup12",
+			"Name": "BreastJiggleY1"
+		},
+		{
+			"Id": "Param99",
+			"GroupId": "ParamGroup12",
+			"Name": "BreastPhyX1"
+		},
+		{
+			"Id": "Param100",
+			"GroupId": "ParamGroup12",
+			"Name": "BreastPhyX2"
+		},
+		{
+			"Id": "Param101",
+			"GroupId": "ParamGroup12",
+			"Name": "BreastJiggleX1"
+		},
+		{
+			"Id": "Param60",
+			"GroupId": "ParamGroup15",
+			"Name": "AngleSkirtPhyX1"
+		},
+		{
+			"Id": "Param61",
+			"GroupId": "ParamGroup15",
+			"Name": "AngleSkirtPhyX2"
+		},
+		{
+			"Id": "Param62",
+			"GroupId": "ParamGroup15",
+			"Name": "AngleSkirtPhyX3"
+		},
+		{
+			"Id": "Param79",
+			"GroupId": "ParamGroup15",
+			"Name": "PositionSkirtPhyX1"
+		},
+		{
+			"Id": "Param80",
+			"GroupId": "ParamGroup15",
+			"Name": "PositionSkirtPhyX2"
+		},
+		{
+			"Id": "Param81",
+			"GroupId": "ParamGroup15",
+			"Name": "PositionSkirtPhyX3"
+		},
+		{
+			"Id": "Param63",
+			"GroupId": "ParamGroup15",
+			"Name": "SkirtPhyY1"
+		},
+		{
+			"Id": "Param64",
+			"GroupId": "ParamGroup15",
+			"Name": "SkirtPhyY2"
+		},
+		{
+			"Id": "Param69",
+			"GroupId": "ParamGroup15",
+			"Name": "SkirtPhyY3"
+		},
+		{
+			"Id": "Param65",
+			"GroupId": "ParamGroup15",
+			"Name": "SkirtPositionR"
+		},
+		{
+			"Id": "Param66",
+			"GroupId": "ParamGroup15",
+			"Name": "SkirtPositionL"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "ParamGroup10",
+			"Name": "Breath"
+		},
+		{
+			"Id": "Param22",
+			"GroupId": "ParamGroup25",
+			"Name": "HairStyle1ToggleOn/Off"
+		},
+		{
+			"Id": "Param47",
+			"GroupId": "ParamGroup25",
+			"Name": "HairStyle2ToggleOn/Off"
+		},
+		{
+			"Id": "Param56",
+			"GroupId": "ParamGroup25",
+			"Name": "CoatPhy"
+		},
+		{
+			"Id": "Param85",
+			"GroupId": "ParamGroup25",
+			"Name": "GoldToggle"
+		},
+		{
+			"Id": "Param84",
+			"GroupId": "ParamGroup25",
+			"Name": "SkirtOffOn"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroup23",
+			"GroupId": "",
+			"Name": "SphereTest2"
+		},
+		{
+			"Id": "ParamGroup26",
+			"GroupId": "",
+			"Name": "Earring3D"
+		},
+		{
+			"Id": "ParamGroup16",
+			"GroupId": "",
+			"Name": "Clock"
+		},
+		{
+			"Id": "ParamGroup22",
+			"GroupId": "",
+			"Name": "SphereTest1"
+		},
+		{
+			"Id": "ParamGroup21",
+			"GroupId": "",
+			"Name": "3DCogweel"
+		},
+		{
+			"Id": "ParamGroup",
+			"GroupId": "",
+			"Name": "AngleHead"
+		},
+		{
+			"Id": "ParamGroup24",
+			"GroupId": "",
+			"Name": "HeadParts"
+		},
+		{
+			"Id": "ParamGroup5",
+			"GroupId": "",
+			"Name": "Body"
+		},
+		{
+			"Id": "ParamGroup20",
+			"GroupId": "",
+			"Name": "BodyPosition"
+		},
+		{
+			"Id": "ParamGroup19",
+			"GroupId": "",
+			"Name": "BodyLeanForward"
+		},
+		{
+			"Id": "ParamGroup2",
+			"GroupId": "",
+			"Name": "Eyes"
+		},
+		{
+			"Id": "ParamGroup4",
+			"GroupId": "",
+			"Name": "Mouth"
+		},
+		{
+			"Id": "ParamGroup9",
+			"GroupId": "",
+			"Name": "VTS Plagin"
+		},
+		{
+			"Id": "ParamGroup13",
+			"GroupId": "",
+			"Name": "EyesExps"
+		},
+		{
+			"Id": "ParamGroup7",
+			"GroupId": "",
+			"Name": "EarsPhy"
+		},
+		{
+			"Id": "ParamGroup3",
+			"GroupId": "",
+			"Name": "Brow"
+		},
+		{
+			"Id": "ParamGroup14",
+			"GroupId": "",
+			"Name": "VB Brow"
+		},
+		{
+			"Id": "ParamGroup17",
+			"GroupId": "",
+			"Name": "HairPhyFront"
+		},
+		{
+			"Id": "ParamGroup6",
+			"GroupId": "",
+			"Name": "HairPhyBack"
+		},
+		{
+			"Id": "ParamGroup18",
+			"GroupId": "",
+			"Name": "HairPhyZ"
+		},
+		{
+			"Id": "ParamGroup11",
+			"GroupId": "",
+			"Name": "ArmPhyX"
+		},
+		{
+			"Id": "ParamGroup8",
+			"GroupId": "",
+			"Name": "ClothesPhy"
+		},
+		{
+			"Id": "ParamGroup12",
+			"GroupId": "",
+			"Name": "BreastPhy"
+		},
+		{
+			"Id": "ParamGroup15",
+			"GroupId": "",
+			"Name": "SkirtsPhy"
+		},
+		{
+			"Id": "ParamGroup10",
+			"GroupId": "",
+			"Name": "Breath"
+		},
+		{
+			"Id": "ParamGroup25",
+			"GroupId": "",
+			"Name": "Toggle"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "Part50",
+			"Name": "Waistback_forSeparated_1.psd"
+		},
+		{
+			"Id": "Part44",
+			"Name": "RedSkirt_Mich_forSeparated_1.psd"
+		},
+		{
+			"Id": "Part42",
+			"Name": "ExtraParts_Mich_forSeparated_1.psd"
+		},
+		{
+			"Id": "Part20",
+			"Name": "Allparts"
+		},
+		{
+			"Id": "Part18",
+			"Name": "Eye.PNG"
+		},
+		{
+			"Id": "Part3",
+			"Name": "Items_Mich_forSeparated.psd"
+		},
+		{
+			"Id": "Part39",
+			"Name": "Exps$Tail_Mich_forSeparated.psd"
+		},
+		{
+			"Id": "PartSketch0",
+			"Name": "[ Guide Image]"
+		},
+		{
+			"Id": "Part29",
+			"Name": "SphereGuid.png"
+		},
+		{
+			"Id": "Part26",
+			"Name": "Sphere&Clock_forSeparated_1.psd"
+		},
+		{
+			"Id": "Part",
+			"Name": "3DCogWel_forSeparated.psd"
+		},
+		{
+			"Id": "Part78",
+			"Name": "tangueOut.psd"
+		},
+		{
+			"Id": "Part16",
+			"Name": "VTuber_Michelle.psd"
+		},
+		{
+			"Id": "HairStyle2",
+			"Name": "HairStyle2"
+		},
+		{
+			"Id": "ExtraItems",
+			"Name": "ExtraItems"
+		},
+		{
+			"Id": "Shpere",
+			"Name": "Shpere"
+		},
+		{
+			"Id": "HandClockOrigin",
+			"Name": "HandClockOrigin"
+		},
+		{
+			"Id": "Rings",
+			"Name": "Rings"
+		},
+		{
+			"Id": "Part4",
+			"Name": "ｐｓｄ"
+		},
+		{
+			"Id": "WaistItems",
+			"Name": "WaistItems"
+		},
+		{
+			"Id": "SphereFront",
+			"Name": "SphereFront"
+		},
+		{
+			"Id": "SphereBack",
+			"Name": "SphereBack"
+		},
+		{
+			"Id": "BlueEnagy",
+			"Name": "BlueEnagy"
+		},
+		{
+			"Id": "Cover",
+			"Name": "Cover"
+		},
+		{
+			"Id": "ClockHand",
+			"Name": "ClockHand"
+		},
+		{
+			"Id": "Part6",
+			"Name": "CogWeelFront"
+		},
+		{
+			"Id": "Part2",
+			"Name": "CogWeelSide"
+		},
+		{
+			"Id": "Part9",
+			"Name": "CogWeelBack"
+		},
+		{
+			"Id": "Part15",
+			"Name": "CogWeelOut"
+		},
+		{
+			"Id": "Part30",
+			"Name": "SphereTexture1.psd"
+		},
+		{
+			"Id": "Part10",
+			"Name": "CogWeelIn"
+		},
+		{
+			"Id": "HandClock",
+			"Name": "HandClock"
+		},
+		{
+			"Id": "Hairaccessories",
+			"Name": "Hairaccessories"
+		},
+		{
+			"Id": "Head2",
+			"Name": "Head"
+		},
+		{
+			"Id": "ChestGear",
+			"Name": "ChestGear"
+		},
+		{
+			"Id": "Bow",
+			"Name": "Bow"
+		},
+		{
+			"Id": "Coat",
+			"Name": "Coat"
+		},
+		{
+			"Id": "NeckClothes",
+			"Name": "NeckClothes"
+		},
+		{
+			"Id": "CoatUnderAll",
+			"Name": "CoatUnderAll"
+		},
+		{
+			"Id": "Part24",
+			"Name": "WaistGold"
+		},
+		{
+			"Id": "WaistGold1",
+			"Name": "WaistGold1"
+		},
+		{
+			"Id": "WaistGold2",
+			"Name": "WaistGold2"
+		},
+		{
+			"Id": "BreastBelt",
+			"Name": "BreastBelt"
+		},
+		{
+			"Id": "WaistGold",
+			"Name": "WaistGold"
+		},
+		{
+			"Id": "Part25",
+			"Name": "WaistAll"
+		},
+		{
+			"Id": "Waist",
+			"Name": "Waist"
+		},
+		{
+			"Id": "Breast2",
+			"Name": "Breast"
+		},
+		{
+			"Id": "ChestSkin",
+			"Name": "ChestSkin"
+		},
+		{
+			"Id": "ArmCogweelR",
+			"Name": "ArmCogweelR"
+		},
+		{
+			"Id": "ArmCogweelR2",
+			"Name": "ArmCogweelR"
+		},
+		{
+			"Id": "Skirts",
+			"Name": "Skirts"
+		},
+		{
+			"Id": "Part23",
+			"Name": "ArmClothes"
+		},
+		{
+			"Id": "GoldWaistB",
+			"Name": "GoldWaistB"
+		},
+		{
+			"Id": "Hand",
+			"Name": "Hand"
+		},
+		{
+			"Id": "ArmGreenLineartBack",
+			"Name": "ArmGreenLineartBack"
+		},
+		{
+			"Id": "ArmL",
+			"Name": "ArmL"
+		},
+		{
+			"Id": "ArmR2",
+			"Name": "ArmR"
+		},
+		{
+			"Id": "ShoulderLineart",
+			"Name": "ShoulderLineart"
+		},
+		{
+			"Id": "BackShoulder",
+			"Name": "BackShoulder"
+		},
+		{
+			"Id": "Legs",
+			"Name": "Legs"
+		},
+		{
+			"Id": "Waist4",
+			"Name": "Waist"
+		},
+		{
+			"Id": "SkiGreenSkirtBack",
+			"Name": "SkiGreenSkirtBack"
+		},
+		{
+			"Id": "Part40",
+			"Name": "Backhair_Style2"
+		},
+		{
+			"Id": "BackHair2",
+			"Name": "BackHair"
+		},
+		{
+			"Id": "Backhair",
+			"Name": "BackhairUnder"
+		},
+		{
+			"Id": "Part14",
+			"Name": "Skirt cloakB"
+		},
+		{
+			"Id": "Scrole",
+			"Name": "Scrole"
+		},
+		{
+			"Id": "WaistItems1",
+			"Name": "WaistItems1"
+		},
+		{
+			"Id": "WaistItems3",
+			"Name": "WaistItems2"
+		},
+		{
+			"Id": "WaistItems5",
+			"Name": "WaistItems3"
+		},
+		{
+			"Id": "Part34",
+			"Name": "ClockBack"
+		},
+		{
+			"Id": "Part35",
+			"Name": "ClockF"
+		},
+		{
+			"Id": "Part32",
+			"Name": "CogWeelFrontGlue"
+		},
+		{
+			"Id": "Part31",
+			"Name": "CogWeelBackGlue"
+		},
+		{
+			"Id": "JemBlueGlasses",
+			"Name": "JemBlueGlasses"
+		},
+		{
+			"Id": "HeadParts",
+			"Name": "HeadParts"
+		},
+		{
+			"Id": "HeadParts2",
+			"Name": "HeadParts"
+		},
+		{
+			"Id": "Part43",
+			"Name": "DefermerErase"
+		},
+		{
+			"Id": "BangsLineart",
+			"Name": "BangsLineart"
+		},
+		{
+			"Id": "HairBand",
+			"Name": "HairBand"
+		},
+		{
+			"Id": "BangsSideL3",
+			"Name": "BangsSideL"
+		},
+		{
+			"Id": "Cry2",
+			"Name": "CryingtearsL"
+		},
+		{
+			"Id": "Cry",
+			"Name": "CryingtearsR"
+		},
+		{
+			"Id": "Face",
+			"Name": "Face"
+		},
+		{
+			"Id": "Earring2",
+			"Name": "Earring_New"
+		},
+		{
+			"Id": "BangUnder",
+			"Name": "BangUnder"
+		},
+		{
+			"Id": "SideBang",
+			"Name": "SideBang"
+		},
+		{
+			"Id": "GoldWaistF",
+			"Name": "GoldWaistF"
+		},
+		{
+			"Id": "SkiGreenSkirt",
+			"Name": "SkiGreenSkirt"
+		},
+		{
+			"Id": "WaistBelt",
+			"Name": "WaistBelt"
+		},
+		{
+			"Id": "Part13",
+			"Name": "Skirt cloakF"
+		},
+		{
+			"Id": "ArmLineartFrill",
+			"Name": "ArmLineartFrill"
+		},
+		{
+			"Id": "ForearmRings",
+			"Name": "ForearmRings"
+		},
+		{
+			"Id": "ArmClothesL",
+			"Name": "ArmClothesL"
+		},
+		{
+			"Id": "ArmClothesR",
+			"Name": "ArmClothesR"
+		},
+		{
+			"Id": "ArmGreen",
+			"Name": "ArmGreen"
+		},
+		{
+			"Id": "ArmGreenLineartFront",
+			"Name": "ArmGreenLineartFront"
+		},
+		{
+			"Id": "Grob",
+			"Name": "Grob"
+		},
+		{
+			"Id": "HandL",
+			"Name": "HandL"
+		},
+		{
+			"Id": "HandR",
+			"Name": "HandR"
+		},
+		{
+			"Id": "LegL4",
+			"Name": "LegL"
+		},
+		{
+			"Id": "LegR4",
+			"Name": "LegR"
+		},
+		{
+			"Id": "FoodR",
+			"Name": "FoodR"
+		},
+		{
+			"Id": "FoodL",
+			"Name": "FoodL"
+		},
+		{
+			"Id": "Hairaccessories2",
+			"Name": "HairaccessoriesHairstyle2"
+		},
+		{
+			"Id": "BowHead2",
+			"Name": "BowHeadPhy2"
+		},
+		{
+			"Id": "BackHairR",
+			"Name": "BackHairR"
+		},
+		{
+			"Id": "BackHairBackR4",
+			"Name": "BackHairBackR4"
+		},
+		{
+			"Id": "BackHairBackR2",
+			"Name": "BackHairBackR2"
+		},
+		{
+			"Id": "BackHairL",
+			"Name": "BackHairL"
+		},
+		{
+			"Id": "BackHairRL2",
+			"Name": "BackHairRL2"
+		},
+		{
+			"Id": "BackHairL4",
+			"Name": "BackHairL4"
+		},
+		{
+			"Id": "BackHairR3",
+			"Name": "BackHairR3"
+		},
+		{
+			"Id": "BackHairCL",
+			"Name": "BackHairCL"
+		},
+		{
+			"Id": "BackHairCR2",
+			"Name": "BackHairCR2"
+		},
+		{
+			"Id": "BackHairCR1",
+			"Name": "BackHairCR1"
+		},
+		{
+			"Id": "BackHairC",
+			"Name": "BackHairC"
+		},
+		{
+			"Id": "Part38",
+			"Name": "Skirt cloakB"
+		},
+		{
+			"Id": "Part5",
+			"Name": "BangsFR1&2"
+		},
+		{
+			"Id": "Part7",
+			"Name": "BangsFR3-1&2"
+		},
+		{
+			"Id": "Part8",
+			"Name": "BangsF4-1"
+		},
+		{
+			"Id": "Part11",
+			"Name": "BangsFL1,2&3"
+		},
+		{
+			"Id": "Part12",
+			"Name": "BangsFL4, 5&6"
+		},
+		{
+			"Id": "Facialexps",
+			"Name": "Facialexps"
+		},
+		{
+			"Id": "Part27",
+			"Name": "EyeRCopy"
+		},
+		{
+			"Id": "Part17",
+			"Name": "EyesL"
+		},
+		{
+			"Id": "Mouth5",
+			"Name": "Mouth〇"
+		},
+		{
+			"Id": "Mouth4",
+			"Name": "Mouth●"
+		},
+		{
+			"Id": "Mouth",
+			"Name": "Mouth"
+		},
+		{
+			"Id": "Nose",
+			"Name": "Nose"
+		},
+		{
+			"Id": "HairShadow",
+			"Name": "HairShadow"
+		},
+		{
+			"Id": "Face3",
+			"Name": "Face"
+		},
+		{
+			"Id": "Part46",
+			"Name": "Gold2_3D1"
+		},
+		{
+			"Id": "Part45",
+			"Name": "Gold2_3D2"
+		},
+		{
+			"Id": "Part47",
+			"Name": "Gold2_3D3"
+		},
+		{
+			"Id": "BraidSideL",
+			"Name": "BraidSideL"
+		},
+		{
+			"Id": "BangsSideR",
+			"Name": "BangsSideR"
+		},
+		{
+			"Id": "WaistGoldCogweel1",
+			"Name": "WaistGoldCogweel1"
+		},
+		{
+			"Id": "WaistGearL",
+			"Name": "WaistGearL"
+		},
+		{
+			"Id": "WaistGearR",
+			"Name": "WaistGearR"
+		},
+		{
+			"Id": "WaistGoldCogweel3",
+			"Name": "WaistGoldCogweel2"
+		},
+		{
+			"Id": "WaistGoldBase",
+			"Name": "WaistGoldBase"
+		},
+		{
+			"Id": "ScarfClockF",
+			"Name": "ScarfClockF"
+		},
+		{
+			"Id": "ScarfClockFUnder",
+			"Name": "ScarfClockFUnder"
+		},
+		{
+			"Id": "Part37",
+			"Name": "GrobBack"
+		},
+		{
+			"Id": "LegBelt1",
+			"Name": "LegBelt1"
+		},
+		{
+			"Id": "LegBelt2",
+			"Name": "LegBelt2"
+		},
+		{
+			"Id": "JemBlueGlasses2",
+			"Name": "JemBlueGlasses"
+		},
+		{
+			"Id": "HeadParts4",
+			"Name": "HeadParts"
+		},
+		{
+			"Id": "HeadParts5",
+			"Name": "HeadParts"
+		},
+		{
+			"Id": "BowHead",
+			"Name": "BowHeadStyle2"
+		},
+		{
+			"Id": "Angry",
+			"Name": "Angry"
+		},
+		{
+			"Id": "SparklingEyes",
+			"Name": "SparklingEyes"
+		},
+		{
+			"Id": "Surprised",
+			"Name": "Surprised"
+		},
+		{
+			"Id": "Happy",
+			"Name": "Happy"
+		},
+		{
+			"Id": "Sad2",
+			"Name": "SadR"
+		},
+		{
+			"Id": "Sad",
+			"Name": "SadL"
+		},
+		{
+			"Id": "Part28",
+			"Name": "EyesL"
+		},
+		{
+			"Id": "Part97",
+			"Name": "EyeWarpdeformerR○"
+		},
+		{
+			"Id": "Eyebrow",
+			"Name": "EyebrowL"
+		},
+		{
+			"Id": "Eyelash7",
+			"Name": "EyelashL"
+		},
+		{
+			"Id": "Part19",
+			"Name": "EyelidsL"
+		},
+		{
+			"Id": "Part93",
+			"Name": "TangueOut"
+		},
+		{
+			"Id": "NewMouth",
+			"Name": "NewMouth"
+		},
+		{
+			"Id": "Mouth6",
+			"Name": "Mouth"
+		},
+		{
+			"Id": "MouthOut2",
+			"Name": "MouthOut"
+		},
+		{
+			"Id": "MouthIn3",
+			"Name": "MouthIn"
+		},
+		{
+			"Id": "FaceAll",
+			"Name": "FaceAll"
+		},
+		{
+			"Id": "Ears",
+			"Name": "Ears"
+		},
+		{
+			"Id": "Braid",
+			"Name": "Braid"
+		},
+		{
+			"Id": "ScarfClockFUnder2",
+			"Name": "ScarfClockFUnder"
+		},
+		{
+			"Id": "Belt3",
+			"Name": "Belt"
+		},
+		{
+			"Id": "LegItems",
+			"Name": "LegItems"
+		},
+		{
+			"Id": "Part21",
+			"Name": "Belt Copy 2"
+		},
+		{
+			"Id": "Part33",
+			"Name": "LegItems Copy"
+		},
+		{
+			"Id": "Part99",
+			"Name": "EyeWarpdeformerR○"
+		},
+		{
+			"Id": "Eyebrow3",
+			"Name": "EyebrowL"
+		},
+		{
+			"Id": "Eyelash9",
+			"Name": "EyelashL"
+		},
+		{
+			"Id": "Part41",
+			"Name": "EyelidsL"
+		},
+		{
+			"Id": "Part22",
+			"Name": "EyeLight"
+		},
+		{
+			"Id": "Eyebrows2",
+			"Name": "Eyebrows"
+		},
+		{
+			"Id": "EyeLight9",
+			"Name": "EyeLightNew"
+		},
+		{
+			"Id": "Pupiles3",
+			"Name": "Pupiles"
+		},
+		{
+			"Id": "Uppermouth3",
+			"Name": "Uppermouth"
+		},
+		{
+			"Id": "UnderMouth3",
+			"Name": "UnderMouth"
+		},
+		{
+			"Id": "Tangues2",
+			"Name": "Tangues"
+		},
+		{
+			"Id": "MouthSide3",
+			"Name": "MouthSide"
+		},
+		{
+			"Id": "UnderMouthSide3",
+			"Name": "UnderMouthSide"
+		},
+		{
+			"Id": "Uppermouth",
+			"Name": "Uppermouth"
+		},
+		{
+			"Id": "UnderMouth",
+			"Name": "UnderMouth"
+		},
+		{
+			"Id": "MouthSide",
+			"Name": "MouthSide"
+		},
+		{
+			"Id": "UnderMouthSide",
+			"Name": "UnderMouthSide"
+		},
+		{
+			"Id": "BangsSideL",
+			"Name": "BangsSideL"
+		},
+		{
+			"Id": "Light4",
+			"Name": "Light"
+		},
+		{
+			"Id": "Part36",
+			"Name": "EyeLight"
+		},
+		{
+			"Id": "Eyebrows4",
+			"Name": "Eyebrows"
+		},
+		{
+			"Id": "EyeLight16",
+			"Name": "EyeLightNew"
+		},
+		{
+			"Id": "Pupiles7",
+			"Name": "Pupiles"
+		},
+		{
+			"Id": "Part48",
+			"Name": "SperkleLightL"
+		},
+		{
+			"Id": "Part49",
+			"Name": "SperkleLightR"
+		}
+	],
+	"CombinedParameters": [
+		[
+			"Param37",
+			"Param39"
+		],
+		[
+			"ParamAngleX",
+			"ParamAngleY"
+		],
+		[
+			"ParamMouthForm",
+			"ParamMouthOpenY"
+		],
+		[
+			"Param27",
+			"Param29"
+		]
+	]
+}
