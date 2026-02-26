@@ -4,27 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-    <!-- OGP Meta Tags for Link Embedding with Cache Busting -->
-    <meta property="og:title" content="Ninta配信予定 / Streaming Schedule" >
-    <meta property="og:description" content="JST, CEST, EST - 週間配信予定表 / Weekly Streaming Schedule" >
-    <meta property="og:image" content="https://ninta.main.jp/schedule_image.png?t={{ timestamp }}" >
-    <meta property="og:image:type" content="image/png" >
-    <meta property="og:image:width" content="1400" >
-    <meta property="og:image:height" content="1400" >
-    <meta property="og:image:alt" content="Ninta配信予定 / Streaming Schedule" >
-    <meta property="og:url" content="https://ninta.main.jp/schedule" >
-    <meta property="og:type" content="website" >
-    <meta property="og:site_name" content="Ninta Live2D & Art" >
-    <meta property="og:updated_time" content="{{ timestamp }}" >
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="Ninta's Streaming Schedule">
+    <meta name="description" content="Weekly streaming schedule with JST, CEST, and EST times - Live2D Art & Rigging">
 
-    <!-- Twitter Card with Cache Busting -->
-    <meta name="twitter:card" content="summary_large_image" >
-    <meta name="twitter:site" content="@ninta_Mk3" >
-    <meta name="twitter:creator" content="@ninta_Mk3" >
-    <meta name="twitter:title" content="Ninta配信予定 / Streaming Schedule" >
-    <meta name="twitter:description" content="JST, CEST, EST - 週間配信予定表 / Weekly Streaming Schedule" >
-    <meta name="twitter:image" content="https://ninta.main.jp/schedule_image.png?t={{ timestamp }}" >
-    <meta name="twitter:image:alt" content="Ninta配信予定 / Streaming Schedule" >
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ninta.main.jp/schedule">
+    <meta property="og:title" content="Ninta's Streaming Schedule">
+    <meta property="og:description" content="Weekly streaming schedule with JST, CEST, and EST times - Live2D Art & Rigging">
+    <meta property="og:image" content="https://ninta.main.jp/static/schedule_image.png?v={{ timestamp }}">
+    <meta property="og:image:secure_url" content="https://ninta.main.jp/static/schedule_image.png?v={{ timestamp }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Ninta's Streaming Schedule">
+    <meta property="og:site_name" content="Ninta Live2D & Art">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://ninta.main.jp/schedule">
+    <meta name="twitter:title" content="Ninta's Streaming Schedule">
+    <meta name="twitter:description" content="Weekly streaming schedule with JST, CEST, and EST times - Live2D Art & Rigging">
+    <meta name="twitter:image" content="https://ninta.main.jp/static/schedule_image.png?v={{ timestamp }}">
+    <meta name="twitter:image:src" content="https://ninta.main.jp/static/schedule_image.png?v={{ timestamp }}">
+    <meta name="twitter:image:alt" content="Ninta's Streaming Schedule">
+    <meta name="twitter:site" content="@ninta_mk3">
+    <meta name="twitter:creator" content="@ninta_mk3">
 
     <title>{{ title }}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon_VTube.png') }}">
@@ -239,21 +245,118 @@
                 <button onclick="downloadScheduleImage()" class="download-button">
                     📷 PNG画像をダウンロード / Download PNG Image
                 </button>
+                <button onclick="shareToTwitter()" class="download-button" style="background: linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%);">
+                    🐦 Twitterでシェア / Share on Twitter
+                </button>
             </p>
             <p><a href="/">ホームに戻る / Back to Home</a></p>
         </div>
     </div>
 
+    <!-- HTML2Canvas for client-side image generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <script>
-    function downloadScheduleImage() {
-        const link = document.createElement('a');
-        const date = new Date().toISOString().split('T')[0];
-        link.download = `ninta_stream_schedule_${date}.png`;
-        link.href = '/schedule_image.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // Generate image on client-side and upload to server
+    function generateAndUploadScheduleImage() {
+        const scheduleDiv = document.getElementById('schedule-display');
+
+        html2canvas(scheduleDiv, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            logging: false
+        }).then(canvas => {
+            // Convert canvas to blob
+            canvas.toBlob(function(blob) {
+                // Create FormData and upload to server
+                const formData = new FormData();
+                formData.append('image', blob, 'schedule_image.png');
+
+                fetch('/upload_schedule_image', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Image uploaded:', data);
+                })
+                .catch(error => {
+                    console.error('Error uploading image:', error);
+                });
+            }, 'image/png');
+        });
     }
+
+    function downloadScheduleImage() {
+        const scheduleDiv = document.getElementById('schedule-display');
+
+        html2canvas(scheduleDiv, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            logging: false
+        }).then(canvas => {
+            const link = document.createElement('a');
+            const date = new Date().toISOString().split('T')[0];
+            link.download = `ninta_stream_schedule_${date}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    function shareToTwitter() {
+        // Build schedule text in English
+        const scheduleText = buildScheduleText();
+        const url = 'https://ninta.main.jp/schedule';
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(scheduleText)}&url=${encodeURIComponent(url)}`;
+        window.open(twitterUrl, '_blank', 'width=550,height=420');
+    }
+
+    function buildScheduleText() {
+        const schedules = {{ schedules | tojson }};
+        let text = "📅 Ninta's Streaming Schedule\n\n";
+
+        const dayNames = {
+            'Sunday': 'Sun',
+            'Monday': 'Mon',
+            'Tuesday': 'Tue',
+            'Wednesday': 'Wed',
+            'Thursday': 'Thu',
+            'Friday': 'Fri',
+            'Saturday': 'Sat'
+        };
+
+        schedules.forEach(schedule => {
+            const day = dayNames[schedule[1]] || schedule[1];
+            let timeStr = '';
+            let title = schedule[5] || 'TBD';
+
+            // Extract EST time from schedule[4]
+            if (schedule[4] && schedule[4].includes('|||')) {
+                const times = schedule[4].split('|||');
+                // times[2] is EST
+                timeStr = times[2].trim();
+            } else if (schedule[4]) {
+                timeStr = 'TBD';
+            } else {
+                timeStr = 'TBD';
+            }
+
+            text += `${day}: ${timeStr} - ${title}\n`;
+        });
+
+        text += "\n✨ Live2D Art & Rigging Streams";
+        return text;
+    }
+
+    // Auto-generate and upload schedule image when page loads
+    window.addEventListener('load', function() {
+        // Wait a bit for fonts and styles to load
+        setTimeout(function() {
+            generateAndUploadScheduleImage();
+        }, 1000);
+    });
     </script>
 </body>
 </html>

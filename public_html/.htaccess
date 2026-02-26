@@ -58,9 +58,16 @@ Options -Indexes
         Header set X-Robots-Tag "noindex, nofollow, noarchive"
     </FilesMatch>
 
-    # For texture files
+    # For texture files (but allow OGP images to be cached)
     <FilesMatch "\.png$">
-        Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+        # Allow Twitter/OGP crawlers to cache schedule_image.png
+        <If "%{REQUEST_URI} =~ /schedule_image\.png/">
+            Header set Cache-Control "public, max-age=600"
+            Header set Content-Type "image/png"
+        </If>
+        <Else>
+            Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+        </Else>
     </FilesMatch>
 </IfModule>
 
