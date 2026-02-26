@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask , render_template , request , g , redirect , url_for , session 
+from flask import Flask , render_template , request , g , redirect , url_for , session , flash
 from flask import Blueprint
 from werkzeug.security import check_password_hash, generate_password_hash
 from db import UpdatePosts
@@ -23,17 +23,20 @@ def access():
         user = c.fetchone()
 
         if user is None:
+            flash('ユーザー名が見つかりません / Username not found', 'error')
             return redirect(url_for('login.login'))
-        
+
         else:
             passdb = user[2]
             if check_password_hash(passdb, password):
                 session['id'] = user[0]
                 session['username'] = username
+                flash(f'ログインに成功しました！ / Login successful! Welcome, {username}', 'success')
                 return redirect(url_for('index'))
-            
+
             else:
-                 return redirect(url_for('login.login'))
+                flash('パスワードが正しくありません / Incorrect password', 'error')
+                return redirect(url_for('login.login'))
 
 
 

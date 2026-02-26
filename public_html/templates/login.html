@@ -4,6 +4,20 @@
 <main>
 	<div class="chapterType1">
 <h1>Login</h1>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		<div style="margin: 20px 0;">
+			{% for category, message in messages %}
+				<div class="flash-message flash-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; {% if category == 'success' %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+{% endwith %}
+
 <form action="{{ url_for('login.access') }}" method="post">
   <div>
     <label for="user">username</label><br>

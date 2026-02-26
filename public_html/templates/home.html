@@ -5,6 +5,22 @@
 
 		<h1>Home</h1>
 
+		<!-- Flash Messages -->
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				<div style="margin: 20px 0;">
+					{% for category, message in messages %}
+						<div class="flash-message flash-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; {% if category == 'success' %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}">
+							{{ message }}
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		{% endwith %}
+
+		<!-- Stream Schedule -->
+		{% include "stream_schedule.html" %}
+
 		<!-- Live2D Avatar Display - Single Model with Switch Button -->
 		<div style="text-align: center; margin: 20px auto;">
 			<!-- Model Switch Buttons -->
@@ -40,7 +56,7 @@
         <a class="button" href="https://twitter.com/ninta_mk3">Twitter</a>
         <a class="button" href="https://www.pixiv.net/users/43235147">Pixiv</a>
         <a class="button" href="https://www.twitch.tv/ninta_live2d">Twitch</a>
-		<a class="button" href="https://www.youtube.com/@nintaArtLive2D">YouTube</a>
+		<a class="button" href="https://www.youtube.com/@nintaArt">YouTube</a>
 		<a class="button" href="https://ko-fi.com/nintajp">Ko-fi</a>
 
 

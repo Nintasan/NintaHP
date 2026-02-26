@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <!-- OGP Meta Tags for Link Embedding with Cache Busting -->
+    <meta property="og:title" content="Ninta配信予定 / Streaming Schedule" >
+    <meta property="og:description" content="JST, CEST, EST - 週間配信予定表 / Weekly Streaming Schedule" >
+    <meta property="og:image" content="https://ninta.main.jp/schedule_image.png?t={{ timestamp }}" >
+    <meta property="og:image:type" content="image/png" >
+    <meta property="og:image:width" content="1400" >
+    <meta property="og:image:height" content="1400" >
+    <meta property="og:image:alt" content="Ninta配信予定 / Streaming Schedule" >
+    <meta property="og:url" content="https://ninta.main.jp/schedule" >
+    <meta property="og:type" content="website" >
+    <meta property="og:site_name" content="Ninta Live2D & Art" >
+    <meta property="og:updated_time" content="{{ timestamp }}" >
+
+    <!-- Twitter Card with Cache Busting -->
+    <meta name="twitter:card" content="summary_large_image" >
+    <meta name="twitter:site" content="@ninta_Mk3" >
+    <meta name="twitter:creator" content="@ninta_Mk3" >
+    <meta name="twitter:title" content="Ninta配信予定 / Streaming Schedule" >
+    <meta name="twitter:description" content="JST, CEST, EST - 週間配信予定表 / Weekly Streaming Schedule" >
+    <meta name="twitter:image" content="https://ninta.main.jp/schedule_image.png?t={{ timestamp }}" >
+    <meta name="twitter:image:alt" content="Ninta配信予定 / Streaming Schedule" >
+
+    <title>{{ title }}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon_VTube.png') }}">
+
+    <style>
+    body {
+        font-family: "游ゴシック", "arial unicode ms", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #ddd;
+    }
+
+    .schedule-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px auto;
+        position: relative;
+        width: 95%;
+        max-width: 1200px;
+    }
+
+    .dadcat-image {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 120px;
+        height: auto;
+    }
+
+    .schedule-title {
+        text-align: center;
+        color: #8FA3E8;
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    .schedule-title img {
+        width: 32px;
+        height: 32px;
+        vertical-align: middle;
+        margin-right: 10px;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .schedule-table th {
+        background: linear-gradient(135deg, #b8c9f5 0%, #c9b3e0 100%);
+        color: #4a4a4a;
+        padding: 15px;
+        text-align: left;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .schedule-table td {
+        padding: 15px;
+        border-bottom: 2px solid #e0e0e0;
+        font-size: 16px;
+    }
+
+    .schedule-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .schedule-table tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .day-label {
+        font-weight: bold;
+        color: #8FA3E8;
+        font-size: 18px;
+    }
+
+    .time-cell {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .title-cell {
+        color: #333;
+    }
+
+    .empty {
+        color: #999;
+        font-style: italic;
+    }
+
+    .schedule-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid #e0e0e0;
+        color: #666;
+    }
+
+    .schedule-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .schedule-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .download-button {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .download-button:hover {
+        opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+        .dadcat-image {
+            width: 80px;
+            top: 10px;
+            right: 10px;
+        }
+
+        .schedule-title {
+            font-size: 20px;
+            padding-right: 90px;
+        }
+
+        .schedule-title img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .day-label {
+            font-size: 16px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="schedule-container" id="schedule-display">
+        <img src="{{ url_for('static', filename='images/Ninta_Dadcat1.png') }}" alt="Ninta Dadcat" class="dadcat-image">
+        <h1 class="schedule-title">
+            <img src="{{ url_for('static', filename='images/favicon_VTube.png') }}" alt="icon">
+            配信予定 / Streaming Schedule
+        </h1>
+
+        <table class="schedule-table">
+            <tr>
+                <th>曜日 / Day</th>
+                <th>時間 / Time</th>
+                <th>配信タイトル / Stream Title</th>
+            </tr>
+            {% for schedule in schedules %}
+            <tr>
+                <td class="day-label">
+                    {% if schedule[1] == 'Sunday' %}日曜日 / Sunday
+                    {% elif schedule[1] == 'Monday' %}月曜日 / Monday
+                    {% elif schedule[1] == 'Tuesday' %}火曜日 / Tuesday
+                    {% elif schedule[1] == 'Wednesday' %}水曜日 / Wednesday
+                    {% elif schedule[1] == 'Thursday' %}木曜日 / Thursday
+                    {% elif schedule[1] == 'Friday' %}金曜日 / Friday
+                    {% elif schedule[1] == 'Saturday' %}土曜日 / Saturday
+                    {% endif %}
+                </td>
+                <td>
+                    {% if schedule[4] and '|||' in schedule[4] %}
+                        {% set times = schedule[4].split('|||') %}
+                        <div style="line-height: 1.8; font-size: 16px;">
+                            <div style="color: #dc3545; font-weight: bold;">JST: {{ times[0] }}</div>
+                            <div style="color: #667eea; font-weight: bold;">CEST: {{ times[1] }}</div>
+                            <div style="color: #28a745; font-weight: bold;">EST: {{ times[2] }}</div>
+                        </div>
+                    {% else %}
+                        <span class="time-cell {% if not schedule[4] %}empty{% endif %}">
+                            {{ schedule[4] or '未定 / TBD' }}
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="title-cell {% if not schedule[5] %}empty{% endif %}">
+                    {{ schedule[5] or '未定 / TBD' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="schedule-footer">
+            <p>Ninta Live2D & Art</p>
+            <p>
+                <a href="https://twitter.com/ninta_mk3" target="_blank">@ninta_mk3</a> |
+                <a href="https://www.youtube.com/@nintaArt" target="_blank">YouTube</a> |
+                <a href="https://www.twitch.tv/ninta_live2d" target="_blank">Twitch</a>
+            </p>
+            <p>
+                <button onclick="downloadScheduleImage()" class="download-button">
+                    📷 PNG画像をダウンロード / Download PNG Image
+                </button>
+            </p>
+            <p><a href="/">ホームに戻る / Back to Home</a></p>
+        </div>
+    </div>
+
+    <script>
+    function downloadScheduleImage() {
+        const link = document.createElement('a');
+        const date = new Date().toISOString().split('T')[0];
+        link.download = `ninta_stream_schedule_${date}.png`;
+        link.href = '/schedule_image.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    </script>
+</body>
+</html>

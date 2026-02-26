@@ -1,0 +1,352 @@
+<style>
+.stream-schedule {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px auto 40px;
+    position: relative;
+    width: 95%;
+}
+
+.dadcat-image {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 120px;
+    height: auto;
+}
+
+.stream-schedule h2 {
+    text-align: center;
+    color: #8FA3E8;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.stream-schedule h2 img {
+    width: 32px;
+    height: 32px;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+.schedule-table {
+    width: 100%;
+}
+
+.schedule-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.schedule-table th {
+    background: linear-gradient(135deg, #b8c9f5 0%, #c9b3e0 100%);
+    color: #4a4a4a;
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.schedule-table td {
+    padding: 15px;
+    border-bottom: 2px solid #e0e0e0;
+    font-size: 16px;
+}
+
+.schedule-table tr:last-child td {
+    border-bottom: none;
+}
+
+.schedule-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.day-label {
+    font-weight: bold;
+    color: #8FA3E8;
+    font-size: 18px;
+}
+
+.schedule-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.schedule-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.schedule-input.time-input {
+    width: 120px;
+}
+
+.schedule-text {
+    color: #333;
+    font-size: 16px;
+}
+
+.schedule-text.empty {
+    color: #999;
+    font-style: italic;
+}
+
+.time-cell {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.title-cell {
+    color: #333;
+}
+
+.empty {
+    color: #999;
+    font-style: italic;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.update-button, .save-image-button {
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.update-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.update-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.save-image-button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.save-image-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .dadcat-image {
+        width: 80px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .stream-schedule h2 {
+        font-size: 20px;
+        padding-right: 90px;
+    }
+
+    .stream-schedule h2 img {
+        width: 24px;
+        height: 24px;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .day-label {
+        font-size: 16px;
+    }
+}
+</style>
+
+<div class="stream-schedule" id="schedule-container">
+    <img src="{{ url_for('static', filename='images/Ninta_Dadcat1.png') }}" alt="Ninta Dadcat" class="dadcat-image">
+    <h2>
+        <img src="{{ url_for('static', filename='images/favicon_VTube.png') }}" alt="icon">
+        配信予定 / Streaming Schedule
+    </h2>
+
+    <div class="schedule-table">
+        {% if userid != 0 %}
+        <!-- Edit Mode -->
+        <form id="scheduleForm">
+            <table>
+                <tr>
+                    <th>曜日 / Day</th>
+                    <th>時間 / Time</th>
+                    <th>配信タイトル / Stream Title</th>
+                </tr>
+                {% for schedule in schedules %}
+                <tr>
+                    <td class="day-label">
+                        {% if schedule[1] == 'Sunday' %}日曜日 / Sunday
+                        {% elif schedule[1] == 'Monday' %}月曜日 / Monday
+                        {% elif schedule[1] == 'Tuesday' %}火曜日 / Tuesday
+                        {% elif schedule[1] == 'Wednesday' %}水曜日 / Wednesday
+                        {% elif schedule[1] == 'Thursday' %}木曜日 / Thursday
+                        {% elif schedule[1] == 'Friday' %}金曜日 / Friday
+                        {% elif schedule[1] == 'Saturday' %}土曜日 / Saturday
+                        {% endif %}
+                    </td>
+                    <td>
+                        <input type="time"
+                               name="{{ schedule[1] }}_time"
+                               class="schedule-input time-input"
+                               value="{{ schedule[4] or '' }}"
+                               placeholder="CEST">
+                        <small style="display: block; color: #666; margin-top: 5px;">入力: CEST（空欄で未定）</small>
+                    </td>
+                    <td>
+                        <input type="text"
+                               name="{{ schedule[1] }}_title"
+                               class="schedule-input"
+                               value="{{ schedule[5] or '' }}"
+                               placeholder="例: ゲーム配信 / Ex: Gaming Stream（空欄で未定）">
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div class="button-group">
+                <button type="submit" class="update-button">更新 / Update Schedule</button>
+                <a href="/schedule" class="save-image-button" style="text-decoration: none; display: inline-block; line-height: 1;">📅 スケジュールページを見る / View Schedule Page</a>
+            </div>
+            <div class="success-message" id="scheduleSuccessMessage">
+                配信予定を更新しました！ / Schedule updated successfully!
+            </div>
+        </form>
+        {% else %}
+        <!-- View Mode -->
+        <table>
+            <tr>
+                <th>曜日 / Day</th>
+                <th>時間 / Time</th>
+                <th>配信タイトル / Stream Title</th>
+            </tr>
+            {% for schedule in schedules %}
+            <tr>
+                <td class="day-label">
+                    {% if schedule[1] == 'Sunday' %}日曜日 / Sunday
+                    {% elif schedule[1] == 'Monday' %}月曜日 / Monday
+                    {% elif schedule[1] == 'Tuesday' %}火曜日 / Tuesday
+                    {% elif schedule[1] == 'Wednesday' %}水曜日 / Wednesday
+                    {% elif schedule[1] == 'Thursday' %}木曜日 / Thursday
+                    {% elif schedule[1] == 'Friday' %}金曜日 / Friday
+                    {% elif schedule[1] == 'Saturday' %}土曜日 / Saturday
+                    {% endif %}
+                </td>
+                <td>
+                    {% if schedule[4] and '|||' in schedule[4] %}
+                        {% set times = schedule[4].split('|||') %}
+                        <div style="line-height: 1.8; font-size: 16px;">
+                            <div style="color: #dc3545; font-weight: bold;">JST: {{ times[0] }}</div>
+                            <div style="color: #667eea; font-weight: bold;">CEST: {{ times[1] }}</div>
+                            <div style="color: #28a745; font-weight: bold;">EST: {{ times[2] }}</div>
+                        </div>
+                    {% else %}
+                        <span class="time-cell {% if not schedule[4] %}empty{% endif %}">
+                            {{ schedule[4] or '未定 / TBD' }}
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="title-cell {% if not schedule[5] %}empty{% endif %}">
+                    {{ schedule[5] or '未定 / TBD' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+{% if userid != 0 %}
+$(document).ready(function() {
+    $('#scheduleForm').on('submit', function(event) {
+        event.preventDefault();
+
+        var scheduleData = {
+            Sunday: {
+                time: $('input[name="Sunday_time"]').val(),
+                title: $('input[name="Sunday_title"]').val()
+            },
+            Monday: {
+                time: $('input[name="Monday_time"]').val(),
+                title: $('input[name="Monday_title"]').val()
+            },
+            Tuesday: {
+                time: $('input[name="Tuesday_time"]').val(),
+                title: $('input[name="Tuesday_title"]').val()
+            },
+            Wednesday: {
+                time: $('input[name="Wednesday_time"]').val(),
+                title: $('input[name="Wednesday_title"]').val()
+            },
+            Thursday: {
+                time: $('input[name="Thursday_time"]').val(),
+                title: $('input[name="Thursday_title"]').val()
+            },
+            Friday: {
+                time: $('input[name="Friday_time"]').val(),
+                title: $('input[name="Friday_title"]').val()
+            },
+            Saturday: {
+                time: $('input[name="Saturday_time"]').val(),
+                title: $('input[name="Saturday_title"]').val()
+            }
+        };
+
+        var $button = $('.update-button');
+        $button.prop('disabled', true);
+        $button.text('更新中... / Updating...');
+
+        $.ajax({
+            type: 'POST',
+            url: '/update_schedule',
+            contentType: 'application/json',
+            data: JSON.stringify(scheduleData)
+        })
+        .done(function(response) {
+            $('#scheduleSuccessMessage').fadeIn();
+            setTimeout(function() {
+                $('#scheduleSuccessMessage').fadeOut();
+            }, 3000);
+        })
+        .fail(function(xhr, status, error) {
+            alert('更新に失敗しました。もう一度お試しください。\nFailed to update. Please try again.');
+            console.error('Error:', error);
+        })
+        .always(function() {
+            $button.prop('disabled', false);
+            $button.text('更新 / Update Schedule');
+        });
+    });
+});
+{% endif %}
+</script>
