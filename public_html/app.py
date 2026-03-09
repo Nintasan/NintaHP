@@ -303,32 +303,38 @@ def index():
     c.execute("SELECT * FROM stream_schedule ORDER BY CASE day_of_week WHEN 'Sunday' THEN 0 WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 END")
     schedules_raw = c.fetchall()
 
-    # Convert CEST to multiple timezones with dates
+    # Convert Prague time to multiple timezones with automatic DST handling
+    from pytz import timezone
+    prague_tz = timezone('Europe/Prague')
+    est_tz = timezone('US/Eastern')
+    jst_tz = timezone('Asia/Tokyo')
+
     schedules = []
     for schedule in schedules_raw:
         schedule_list = list(schedule)
         if schedule_list[4]:  # If time exists
             try:
-                # Parse CEST time
-                cest_time = datetime.strptime(schedule_list[4], '%H:%M')
+                # Parse Prague time (CET/CEST)
+                prague_time = datetime.strptime(schedule_list[4], '%H:%M')
 
-                # Calculate EST (CEST - 7 hours) and JST (CEST + 7 hours)
-                est_time = cest_time - timedelta(hours=7)
-                jst_time = cest_time + timedelta(hours=7)
-
-                # Get current date for reference
+                # Get current date for reference and localize to Prague timezone
                 today = datetime.now()
-                base_date = today.replace(hour=cest_time.hour, minute=cest_time.minute)
-                est_date = base_date - timedelta(hours=7)
-                jst_date = base_date + timedelta(hours=7)
+                prague_dt = prague_tz.localize(today.replace(hour=prague_time.hour, minute=prague_time.minute, second=0, microsecond=0))
+
+                # Convert to other timezones (pytz handles DST automatically)
+                est_dt = prague_dt.astimezone(est_tz)
+                jst_dt = prague_dt.astimezone(jst_tz)
+
+                # Get timezone abbreviation (CET or CEST)
+                prague_tz_name = prague_dt.strftime('%Z')
 
                 # Format: "Month Day, Year HH:MM TIMEZONE"
-                est_str = est_date.strftime('%B %d, %Y') + ' ' + est_time.strftime('%H:%M') + ' EST'
-                jst_str = jst_date.strftime('%B %d, %Y') + ' ' + jst_time.strftime('%H:%M') + ' JST'
-                cest_str = base_date.strftime('%B %d, %Y') + ' ' + cest_time.strftime('%H:%M') + ' CEST'
+                est_str = est_dt.strftime('%B %d, %Y %H:%M %Z')
+                jst_str = jst_dt.strftime('%B %d, %Y %H:%M %Z')
+                prague_str = prague_dt.strftime('%B %d, %Y %H:%M ') + prague_tz_name
 
-                # Store all three timezones in order: JST, CEST, EST
-                schedule_list[4] = f"{jst_str}|||{cest_str}|||{est_str}"
+                # Store all three timezones in order: JST, Prague(CET/CEST), EST
+                schedule_list[4] = f"{jst_str}|||{prague_str}|||{est_str}"
             except:
                 schedule_list[4] = schedule_list[4]
         schedules.append(tuple(schedule_list))
@@ -428,32 +434,38 @@ def schedule():
     last_updated = c.fetchone()[0]
     con.close()
 
-    # Convert CEST to multiple timezones with dates
+    # Convert Prague time to multiple timezones with automatic DST handling
+    from pytz import timezone
+    prague_tz = timezone('Europe/Prague')
+    est_tz = timezone('US/Eastern')
+    jst_tz = timezone('Asia/Tokyo')
+
     schedules = []
     for schedule in schedules_raw:
         schedule_list = list(schedule)
         if schedule_list[4]:  # If time exists
             try:
-                # Parse CEST time
-                cest_time = datetime.strptime(schedule_list[4], '%H:%M')
+                # Parse Prague time (CET/CEST)
+                prague_time = datetime.strptime(schedule_list[4], '%H:%M')
 
-                # Calculate EST (CEST - 7 hours) and JST (CEST + 7 hours)
-                est_time = cest_time - timedelta(hours=7)
-                jst_time = cest_time + timedelta(hours=7)
-
-                # Get current date for reference
+                # Get current date for reference and localize to Prague timezone
                 today = datetime.now()
-                base_date = today.replace(hour=cest_time.hour, minute=cest_time.minute)
-                est_date = base_date - timedelta(hours=7)
-                jst_date = base_date + timedelta(hours=7)
+                prague_dt = prague_tz.localize(today.replace(hour=prague_time.hour, minute=prague_time.minute, second=0, microsecond=0))
+
+                # Convert to other timezones (pytz handles DST automatically)
+                est_dt = prague_dt.astimezone(est_tz)
+                jst_dt = prague_dt.astimezone(jst_tz)
+
+                # Get timezone abbreviation (CET or CEST)
+                prague_tz_name = prague_dt.strftime('%Z')
 
                 # Format: "Month Day, Year HH:MM TIMEZONE"
-                est_str = est_date.strftime('%B %d, %Y') + ' ' + est_time.strftime('%H:%M') + ' EST'
-                jst_str = jst_date.strftime('%B %d, %Y') + ' ' + jst_time.strftime('%H:%M') + ' JST'
-                cest_str = base_date.strftime('%B %d, %Y') + ' ' + cest_time.strftime('%H:%M') + ' CEST'
+                est_str = est_dt.strftime('%B %d, %Y %H:%M %Z')
+                jst_str = jst_dt.strftime('%B %d, %Y %H:%M %Z')
+                prague_str = prague_dt.strftime('%B %d, %Y %H:%M ') + prague_tz_name
 
-                # Store all three timezones in order: JST, CEST, EST
-                schedule_list[4] = f"{jst_str}|||{cest_str}|||{est_str}"
+                # Store all three timezones in order: JST, Prague(CET/CEST), EST
+                schedule_list[4] = f"{jst_str}|||{prague_str}|||{est_str}"
             except:
                 schedule_list[4] = schedule_list[4]
         schedules.append(tuple(schedule_list))
@@ -492,33 +504,39 @@ def generate_schedule_image():
         sys.stderr.write(f"Step 3: Fetched {len(schedules_raw)} schedule entries\n")
         con.close()
 
-        # Convert CEST to multiple timezones with dates
+        # Convert Prague time to multiple timezones with automatic DST handling
         sys.stderr.write("Step 4: Converting timezone data...\n")
+        from pytz import timezone
+        prague_tz = timezone('Europe/Prague')
+        est_tz = timezone('US/Eastern')
+        jst_tz = timezone('Asia/Tokyo')
+
         schedules = []
         for schedule in schedules_raw:
             schedule_list = list(schedule)
             if schedule_list[4]:  # If time exists
                 try:
-                    # Parse CEST time
-                    cest_time = datetime.strptime(schedule_list[4], '%H:%M')
+                    # Parse Prague time (CET/CEST)
+                    prague_time = datetime.strptime(schedule_list[4], '%H:%M')
 
-                    # Calculate EST (CEST - 7 hours) and JST (CEST + 7 hours)
-                    est_time = cest_time - timedelta(hours=7)
-                    jst_time = cest_time + timedelta(hours=7)
-
-                    # Get current date for reference
+                    # Get current date for reference and localize to Prague timezone
                     today = datetime.now()
-                    base_date = today.replace(hour=cest_time.hour, minute=cest_time.minute)
-                    est_date = base_date - timedelta(hours=7)
-                    jst_date = base_date + timedelta(hours=7)
+                    prague_dt = prague_tz.localize(today.replace(hour=prague_time.hour, minute=prague_time.minute, second=0, microsecond=0))
 
-                    # Format: "Month Day, Year HH:MM"
-                    est_str = est_date.strftime('%b %d, %Y %H:%M EST')
-                    jst_str = jst_date.strftime('%b %d, %Y %H:%M JST')
-                    cest_str = base_date.strftime('%b %d, %Y %H:%M CEST')
+                    # Convert to other timezones (pytz handles DST automatically)
+                    est_dt = prague_dt.astimezone(est_tz)
+                    jst_dt = prague_dt.astimezone(jst_tz)
+
+                    # Get timezone abbreviation (CET or CEST)
+                    prague_tz_name = prague_dt.strftime('%Z')
+
+                    # Format: "Month Day, Year HH:MM TIMEZONE"
+                    est_str = est_dt.strftime('%b %d, %Y %H:%M %Z')
+                    jst_str = jst_dt.strftime('%b %d, %Y %H:%M %Z')
+                    prague_str = prague_dt.strftime('%b %d, %Y %H:%M ') + prague_tz_name
 
                     # Store all three timezones
-                    schedule_list[4] = (jst_str, cest_str, est_str)
+                    schedule_list[4] = (jst_str, prague_str, est_str)
                 except:
                     schedule_list[4] = None
             schedules.append(tuple(schedule_list))

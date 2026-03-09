@@ -220,8 +220,8 @@
                                name="{{ schedule[1] }}_time"
                                class="schedule-input time-input"
                                value="{{ schedule[4] or '' }}"
-                               placeholder="CEST">
-                        <small style="display: block; color: #666; margin-top: 5px;">入力: CEST（空欄で未定）</small>
+                               placeholder="Prague Time">
+                        <small style="display: block; color: #666; margin-top: 5px;">入力: プラハ時間 CET/CEST（空欄で未定）</small>
                     </td>
                     <td>
                         <input type="text"
@@ -265,9 +265,9 @@
                     {% if schedule[4] and '|||' in schedule[4] %}
                         {% set times = schedule[4].split('|||') %}
                         <div style="line-height: 1.8; font-size: 16px;">
-                            <div style="color: #dc3545; font-weight: bold;">JST: {{ times[0] }}</div>
-                            <div style="color: #667eea; font-weight: bold;">CEST: {{ times[1] }}</div>
-                            <div style="color: #28a745; font-weight: bold;">EST: {{ times[2] }}</div>
+                            <div style="color: #dc3545; font-weight: bold;">{{ times[0] }}</div>
+                            <div style="color: #667eea; font-weight: bold;">{{ times[1] }}</div>
+                            <div style="color: #28a745; font-weight: bold;">{{ times[2] }}</div>
                         </div>
                     {% else %}
                         <span class="time-cell {% if not schedule[4] %}empty{% endif %}">
