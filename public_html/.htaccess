@@ -2,6 +2,14 @@
 RewriteEngine On
 RewriteBase /
 
+# Redirect www to non-www (ninta.info)
+RewriteCond %{HTTP_HOST} ^www\.ninta\.info$ [NC]
+RewriteRule ^(.*)$ https://ninta.info/$1 [R=301,L]
+
+# Redirect old domain to new domain
+RewriteCond %{HTTP_HOST} ^(www\.)?ninta\.main\.jp$ [NC]
+RewriteRule ^(.*)$ https://ninta.info/$1 [R=301,L]
+
 # IMPORTANT: Allow direct access to static files - DO NOT REWRITE
 # Match /static/ URLs directly - stop processing and serve the file
 RewriteRule ^static/ - [L]
@@ -42,6 +50,7 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?ninta\.info [NC]
     RewriteCond %{HTTP_REFERER} !^https?://(www\.)?ninta\.main\.jp [NC]
     RewriteCond %{REQUEST_URI} \.(moc3|model3\.json|physics3\.json)$ [NC]
     RewriteRule .* - [F,L]
@@ -51,7 +60,7 @@ Options -Indexes
 <IfModule mod_headers.c>
     # For Live2D files, only allow same-origin
     <FilesMatch "\.(moc3|model3\.json|physics3\.json|cdi3\.json)$">
-        Header set Access-Control-Allow-Origin "https://ninta.main.jp"
+        Header set Access-Control-Allow-Origin "https://ninta.info"
         Header set Access-Control-Allow-Methods "GET, OPTIONS"
         Header set Access-Control-Allow-Headers "Content-Type, X-Requested-With"
         Header set Cache-Control "no-store, no-cache, must-revalidate, private"

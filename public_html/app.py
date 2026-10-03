@@ -15,6 +15,19 @@ from functools import wraps
 from collections import defaultdict
 import os
 import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from PIL import Image
+try:
+    from email_config import SMTP_SERVER, SMTP_PORT, EMAIL_ADDRESS, EMAIL_PASSWORD, EMAIL_ENABLED
+except ImportError:
+    # デフォルト値（email_config.pyが無い場合）
+    SMTP_SERVER = "smtp.gmail.com"
+    SMTP_PORT = 587
+    EMAIL_ADDRESS = ""
+    EMAIL_PASSWORD = ""
+    EMAIL_ENABLED = False
 
 
 app = Flask(__name__)
@@ -29,6 +42,61 @@ app.register_blueprint(bp_option)
 
 app.secret_key = "aaa"
 app.permanent_session_lifetime = timedelta(minutes=120)
+
+# ================== Email Notification Function ==================
+
+def send_contact_email(name, email, subject, message):
+    """
+    Send email notification when contact form is submitted
+    """
+    if not EMAIL_ENABLED:
+        return False
+
+    if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+        return False
+
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = EMAIL_ADDRESS
+        msg['Subject'] = f"[Website Contact] {subject}"
+
+        # Email body
+        body = f"""
+新しいお問い合わせがあります
+=====================================
+
+名前 / Name: {name}
+メールアドレス / Email: {email}
+件名 / Subject: {subject}
+
+メッセージ / Message:
+-------------------------------------
+{message}
+-------------------------------------
+
+送信日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+このメールはWebサイトのお問い合わせフォームから自動送信されています。
+返信する場合は、上記のメールアドレス ({email}) 宛にご連絡ください。
+"""
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        # Send email via Gmail SMTP
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            server.send_message(msg)
+
+        return True
+    except Exception as e:
+        import sys
+        sys.stderr.write(f"Email sending failed: {str(e)}\n")
+        return False
+
+# ================== End Email Notification Function ==================
 
 # ================== Security Protection Layer ==================
 
@@ -231,129 +299,131 @@ def check_pillow_simple():
     except ImportError as e:
         return f"ERROR: PIL/Pillow NOT installed. Error: {str(e)}. Python: {sys.version}"
 
-@app.route('/')
-def index():
-
+def init_db_home():
+    """Helper function to initialize database for home page"""
     con = get_db()
-    con.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password NOT NULL)"
-    )
-    con.execute("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, userid INTEGER NOT NULL, username TEXT NOT NULL, title TEXT, post NOT NULL, like INTEGER DEFAULT 0)"
-        )
-    con.execute("CREATE TABLE IF NOT EXISTS likes (id INTEGER PRIMARY KEY AUTOINCREMENT, postid INTEGER DEFAULT 0, userid INTEGER, likecheck INTEGER DEFAULT 0)"
-        )
-    con.execute("CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, postid INTEGER DEFAULT 0, userid INTEGER, tagname TEXT NOT NULL, tagcheck INTEGER DEFAULT 0)"
-        )
+    con.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password NOT NULL)")
+    con.execute("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, userid INTEGER NOT NULL, username TEXT NOT NULL, title TEXT, post NOT NULL, like INTEGER DEFAULT 0)")
+    con.execute("CREATE TABLE IF NOT EXISTS likes (id INTEGER PRIMARY KEY AUTOINCREMENT, postid INTEGER DEFAULT 0, userid INTEGER, likecheck INTEGER DEFAULT 0)")
+    con.execute("CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, postid INTEGER DEFAULT 0, userid INTEGER, tagname TEXT NOT NULL, tagcheck INTEGER DEFAULT 0)")
     optiondb()
 
     c = con.cursor()
     c.execute("SELECT MAX(postid) AS maxpostid FROM likes")
     maxlikes = c.fetchone()
-    maxlike = maxlikes[0]
+    maxlike = maxlikes[0] if maxlikes[0] else 0
 
-    c = con.cursor()
     c.execute("SELECT MAX(id) FROM posts")
     max = c.fetchone()
-    maxpost = max[0]
+    maxpost = max[0] if max[0] else 0
 
-    if maxpost == None and maxlike is None:
-        gap = 0
-        maxpost = 0
-        maxlike = 0
+    if maxpost and maxlike is not None:
+        gap = maxpost - maxlike
+        if gap > 0:
+            c.execute("SELECT id FROM posts LIMIT ? OFFSET ?", (gap, maxlike))
+            for row in c.fetchall():
+                c.execute("INSERT INTO likes (postid, userid, likecheck) VALUES (?, ?, ?)", [row[0], 0, 0])
+            con.commit()
 
-    elif maxpost == 1 and maxlike is None:
-        gap = 1
-        maxpost = 1
-        maxlike = 0
-
+@app.route('/')
+def index():
+    # Detect browser language and redirect
+    accept_language = request.headers.get('Accept-Language', '')
+    if 'ja' in accept_language.lower():
+        return redirect(url_for('index_jp'))
     else:
-           gap = maxpost - maxlike
+        return redirect(url_for('index_en'))
 
-    c = con.cursor()
-    c.execute("SELECT id FROM posts LIMIT ? OFFSET ?", (gap,maxlike,))
-    cur = c.fetchall()
+def create_thumbnail(image_path, thumbnail_path, size=(600, 600)):
+    """
+    Create a thumbnail image for faster loading
+    """
+    try:
+        # Skip if thumbnail already exists and is newer than original
+        if os.path.exists(thumbnail_path):
+            if os.path.getmtime(thumbnail_path) >= os.path.getmtime(image_path):
+                return True
 
+        # Create thumbnail directory if it doesn't exist
+        os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
 
-    for row in cur:
+        # Open and resize image
+        with Image.open(image_path) as img:
+            # Convert RGBA to RGB if necessary
+            if img.mode == 'RGBA':
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[3])
+                img = background
+            elif img.mode != 'RGB':
+                img = img.convert('RGB')
 
-        newpostid = row[0]
-        userid=0
-        likecheck=0
+            # Resize maintaining aspect ratio
+            img.thumbnail(size, Image.Resampling.LANCZOS)
 
-        c.execute(
-            "INSERT INTO likes (postid, userid, likecheck) VALUES (?, ?, ?)",
-            [newpostid,userid,likecheck]
-            )
-        con.commit()
+            # Save with optimization
+            img.save(thumbnail_path, 'JPEG', quality=85, optimize=True)
 
+        return True
+    except Exception as e:
+        import sys
+        sys.stderr.write(f"Thumbnail creation failed for {image_path}: {str(e)}\n")
+        return False
 
-    c = con.cursor()
-    cur = c.execute("select * from options WHERE categories = 'option' OR categories = 'planTitle'  ORDER BY orders")
-    options = cur.fetchall()
+@app.route('/jp/')
+def index_jp():
+    init_db_home()
+    userid = session.get('id', 0) if 'username' in session else 0
 
-    c = con.cursor()
-    cur = c.execute("select * from options WHERE categories = 'plan' ORDER BY orders")
-    plans = cur.fetchall()
+    # Get VTuber images and create thumbnails
+    vtuber_folder = os.path.join(app.static_folder, 'images', 'VTuber')
+    thumbnail_folder = os.path.join(app.static_folder, 'images', 'VTuber', 'thumbnails')
+    vtuber_images = []
 
-    c = con.cursor()
-    cur = c.execute("select * from options WHERE categories = 'planTitle' ORDER BY orders")
-    planTitles = cur.fetchall()
+    if os.path.exists(vtuber_folder):
+        files = sorted([f for f in os.listdir(vtuber_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))])
 
-    # Get stream schedule before UpdatePosts closes the connection
-    c = con.cursor()
-    c.execute("SELECT * FROM stream_schedule ORDER BY CASE day_of_week WHEN 'Sunday' THEN 0 WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 END")
-    schedules_raw = c.fetchall()
+        for f in files:
+            original_path = os.path.join(vtuber_folder, f)
+            thumbnail_filename = os.path.splitext(f)[0] + '_thumb.jpg'
+            thumbnail_path = os.path.join(thumbnail_folder, thumbnail_filename)
 
-    # Convert Prague time to multiple timezones with automatic DST handling
-    from pytz import timezone
-    prague_tz = timezone('Europe/Prague')
-    est_tz = timezone('US/Eastern')
-    jst_tz = timezone('Asia/Tokyo')
+            # Create thumbnail
+            create_thumbnail(original_path, thumbnail_path)
 
-    schedules = []
-    for schedule in schedules_raw:
-        schedule_list = list(schedule)
-        if schedule_list[4]:  # If time exists
-            try:
-                # Parse Prague time (CET/CEST)
-                prague_time = datetime.strptime(schedule_list[4], '%H:%M')
+            vtuber_images.append({
+                'original': f'/static/images/VTuber/{f}',
+                'thumbnail': f'/static/images/VTuber/thumbnails/{thumbnail_filename}'
+            })
 
-                # Get current date for reference and localize to Prague timezone
-                today = datetime.now()
-                prague_dt = prague_tz.localize(today.replace(hour=prague_time.hour, minute=prague_time.minute, second=0, microsecond=0))
+    return render_template('home.html', title = 'Live2D Commission【イラストレーター：ニンタ】', userid = userid, lang='jp', vtuber_images=vtuber_images)
 
-                # Convert to other timezones (pytz handles DST automatically)
-                est_dt = prague_dt.astimezone(est_tz)
-                jst_dt = prague_dt.astimezone(jst_tz)
+@app.route('/en/')
+def index_en():
+    init_db_home()
+    userid = session.get('id', 0) if 'username' in session else 0
 
-                # Get timezone abbreviation (CET or CEST)
-                prague_tz_name = prague_dt.strftime('%Z')
+    # Get VTuber images and create thumbnails
+    vtuber_folder = os.path.join(app.static_folder, 'images', 'VTuber')
+    thumbnail_folder = os.path.join(app.static_folder, 'images', 'VTuber', 'thumbnails')
+    vtuber_images = []
 
-                # Format: "Month Day, Year HH:MM TIMEZONE"
-                est_str = est_dt.strftime('%B %d, %Y %H:%M %Z')
-                jst_str = jst_dt.strftime('%B %d, %Y %H:%M %Z')
-                prague_str = prague_dt.strftime('%B %d, %Y %H:%M ') + prague_tz_name
+    if os.path.exists(vtuber_folder):
+        files = sorted([f for f in os.listdir(vtuber_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))])
 
-                # Store all three timezones in order: JST, Prague(CET/CEST), EST
-                schedule_list[4] = f"{jst_str}|||{prague_str}|||{est_str}"
-            except:
-                schedule_list[4] = schedule_list[4]
-        schedules.append(tuple(schedule_list))
+        for f in files:
+            original_path = os.path.join(vtuber_folder, f)
+            thumbnail_filename = os.path.splitext(f)[0] + '_thumb.jpg'
+            thumbnail_path = os.path.join(thumbnail_folder, thumbnail_filename)
 
-    if 'username' in session:
-        userid = session['id']
-    else:
-        userid = 0
+            # Create thumbnail
+            create_thumbnail(original_path, thumbnail_path)
 
-    Posts1 = UpdatePosts(userid = userid, countend = 0, seetags = '')
-    Posts1.Posts()
+            vtuber_images.append({
+                'original': f'/static/images/VTuber/{f}',
+                'thumbnail': f'/static/images/VTuber/thumbnails/{thumbnail_filename}'
+            })
 
-    posts = Posts1.posts
-    tags = Posts1.tags
-    tagbox = Posts1.tagbox
-    count = Posts1.count
-
-    return render_template('home.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/HOME】', posts = posts, userid = userid, tags= tags, \
-                            tagbox = tagbox, count = count, options = options, planTitles = planTitles, plans = plans, schedules = schedules)
+    return render_template('home.html', title = 'Live2D Commission - Illustrator: Ninta', userid = userid, lang='en', vtuber_images=vtuber_images)
 
 
 @app.route('/newcontents', methods=['POST'])
@@ -383,9 +453,75 @@ def newcontents():
 def about():
     return render_template('about.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/About】')
 
+@app.route('/contact', methods=['POST'])
+def contact_submit():
+    """Handle contact form submission"""
+    try:
+        name = request.form.get('name', '')
+        email = request.form.get('email', '')
+        subject = request.form.get('subject', '')
+        message = request.form.get('message', '')
+        lang = request.form.get('lang', 'jp')
+
+        # Save to database
+        con = get_db()
+        con.execute(
+            "CREATE TABLE IF NOT EXISTS contact_submissions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL, subject TEXT NOT NULL, message TEXT NOT NULL, submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+        )
+        con.execute(
+            "INSERT INTO contact_submissions (name, email, subject, message) VALUES (?, ?, ?, ?)",
+            [name, email, subject, message]
+        )
+        con.commit()
+        con.close()
+
+        # Send email notification
+        send_contact_email(name, email, subject, message)
+
+        # Redirect to thank you page with language
+        if lang == 'en':
+            return redirect(url_for('contact_thanks_en'))
+        else:
+            return redirect(url_for('contact_thanks_jp'))
+    except Exception as e:
+        import sys
+        sys.stderr.write(f"Contact form error: {str(e)}\n")
+        flash('An error occurred. Please try again or contact us directly via email. / エラーが発生しました。再度お試しいただくか、メールで直接ご連絡ください。', 'error')
+        if lang == 'en':
+            return redirect(url_for('index_en'))
+        else:
+            return redirect(url_for('index_jp'))
+
+@app.route('/contact/thanks/jp')
+def contact_thanks_jp():
+    """Thank you page - Japanese"""
+    return render_template('contact_thanks.html', title='送信完了 - Live2D Commission', lang='jp')
+
+@app.route('/contact/thanks/en')
+def contact_thanks_en():
+    """Thank you page - English"""
+    return render_template('contact_thanks.html', title='Thank You - Live2D Commission', lang='en')
+
 @app.route('/reply')
 def reply():
     return render_template('reply.html', title = 'Vtuber art & rig comm【イラストレーター：ニンタ/Reply】')
+
+@app.route('/admin/contact-submissions')
+@require_auth
+def contact_submissions():
+    """View contact form submissions - Admin only"""
+    if session.get('id') != 1:
+        flash('管理者権限が必要です / Admin access required')
+        abort(403)
+
+    con = get_db()
+    c = con.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS contact_submissions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL, subject TEXT NOT NULL, message TEXT NOT NULL, submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    c.execute("SELECT * FROM contact_submissions ORDER BY submitted_at DESC")
+    submissions = c.fetchall()
+    con.close()
+
+    return render_template('contact_submissions.html', title='Contact Submissions', submissions=submissions, userid=session.get('id'))
 
 @app.route('/editnintahp')
 def editnintahp():
@@ -420,66 +556,7 @@ def editnintahpedit():
     con.close()
     return redirect(url_for('home'))
 
-@app.route('/schedule')
-def schedule():
-    from datetime import datetime, timedelta
-
-    con = get_db()
-    c = con.cursor()
-    c.execute("SELECT * FROM stream_schedule ORDER BY CASE day_of_week WHEN 'Sunday' THEN 0 WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 END")
-    schedules_raw = c.fetchall()
-
-    # Get last updated timestamp
-    c.execute("SELECT MAX(updated_at) FROM stream_schedule")
-    last_updated = c.fetchone()[0]
-    con.close()
-
-    # Convert Prague time to multiple timezones with automatic DST handling
-    from pytz import timezone
-    prague_tz = timezone('Europe/Prague')
-    est_tz = timezone('US/Eastern')
-    jst_tz = timezone('Asia/Tokyo')
-
-    schedules = []
-    for schedule in schedules_raw:
-        schedule_list = list(schedule)
-        if schedule_list[4]:  # If time exists
-            try:
-                # Parse Prague time (CET/CEST)
-                prague_time = datetime.strptime(schedule_list[4], '%H:%M')
-
-                # Get current date for reference and localize to Prague timezone
-                today = datetime.now()
-                prague_dt = prague_tz.localize(today.replace(hour=prague_time.hour, minute=prague_time.minute, second=0, microsecond=0))
-
-                # Convert to other timezones (pytz handles DST automatically)
-                est_dt = prague_dt.astimezone(est_tz)
-                jst_dt = prague_dt.astimezone(jst_tz)
-
-                # Get timezone abbreviation (CET or CEST)
-                prague_tz_name = prague_dt.strftime('%Z')
-
-                # Format: "Month Day, Year HH:MM TIMEZONE"
-                est_str = est_dt.strftime('%B %d, %Y %H:%M %Z')
-                jst_str = jst_dt.strftime('%B %d, %Y %H:%M %Z')
-                prague_str = prague_dt.strftime('%B %d, %Y %H:%M ') + prague_tz_name
-
-                # Store all three timezones in order: JST, Prague(CET/CEST), EST
-                schedule_list[4] = f"{jst_str}|||{prague_str}|||{est_str}"
-            except:
-                schedule_list[4] = schedule_list[4]
-        schedules.append(tuple(schedule_list))
-
-    # Create timestamp from last_updated or current time
-    if last_updated:
-        try:
-            timestamp = int(datetime.strptime(last_updated, '%Y-%m-%d %H:%M:%S').timestamp())
-        except:
-            timestamp = int(time.time())
-    else:
-        timestamp = int(time.time())
-
-    return render_template('schedule_page.html', title='配信予定 / Streaming Schedule', schedules=schedules, timestamp=timestamp)
+# Schedule route removed - not needed for simple commission site
 
 def generate_schedule_image():
     """Generate schedule image and save to static folder"""

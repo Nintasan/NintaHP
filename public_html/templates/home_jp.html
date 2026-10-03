@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+	<div class="chapterType2" style="text-align: center; padding: 40px 20px;">
+
+		<!-- Flash Messages -->
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				<div style="max-width: 900px; margin: 0 auto 30px;">
+					{% for category, message in messages %}
+						<div style="padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; {% if category == 'success' %}background-color: #d4edda; color: #155724; border-left: 4px solid #28a745;{% else %}background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545;{% endif %}">
+							{{ message }}
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		{% endwith %}
+
+		<h1 style="font-size: 2.5em; margin-bottom: 20px;">Live2D Commission</h1>
+		<h2 style="font-size: 1.8em; margin-bottom: 30px;">Live2Dモデリング依頼受付</h2>
+
+		<!-- Sample Videos Section -->
+		<div style="max-width: 1200px; margin: 0 auto 60px;">
+			<h3 style="font-size: 1.5em; margin-bottom: 30px;">Sample Works / サンプル作品</h3>
+
+			<ul class="Live2Dgallerry-contents" style="list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+				<li style="flex: 1 1 300px; max-width: 400px;">
+					<div class="video-container">
+						<iframe width="100%" height="315" src="https://www.youtube.com/embed/xeTCihh0kPg?si=_tmWsc5A68Jp4iP0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</li>
+				<li style="flex: 1 1 300px; max-width: 400px;">
+					<div class="video-container">
+						<iframe width="100%" height="315" src="https://www.youtube.com/embed/d_gSRCxzKxU?si=a2eZ-NciuCxN6y4o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</li>
+				<li style="flex: 1 1 300px; max-width: 400px;">
+					<div class="video-container">
+						<iframe width="100%" height="315" src="https://www.youtube.com/embed/k4lmJiDOHxE?si=NLTmGNIUJGmPeXCt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<!-- About Section -->
+		<div style="max-width: 900px; margin: 0 auto 40px; background: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+			<h3 style="font-size: 1.8em; margin-bottom: 20px; color: #333;">About / 自己紹介</h3>
+			<p style="font-size: 1.1em; line-height: 1.8; color: #555; margin-bottom: 20px;">
+				名前: ニンタ / NINTA<br>
+				環境: CLIP STUDIO PAINT PRO / Live2D Cubism Editor
+			</p>
+			<p style="font-size: 1.1em; line-height: 1.8; color: #555; margin-bottom: 30px;">
+				I can take some commissions to design character art, rig Live2D avatar, channel art, icon and so on!<br>
+				ゲームキャラクターデザインイラスト、Vtuberキャラデザ・モデリングの依頼お受けしております。<br>
+				お気軽にご相談ください!
+			</p>
+
+			<h4 style="font-size: 1.4em; margin-bottom: 15px; color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">Vtuberイラストの企業案件実績 (2020~2026)</h4>
+			<ul style="list-style: none; padding: 0; margin-bottom: 30px;">
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>aisaac(アイザック)株式会社</strong> - AIアプリ『Aimy(アイミー)』(ゲーム用Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社VIC (輝夜月所属)</strong> - VTuber (Live2D担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社ライバー (高槻りつ所属)</strong> - VTuber (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>IRIAMライバー深見ヨル様</strong> - VTuber事務所bond (Live2Dモデリング担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>まがれつ様 (登録者20万人)</strong> - 株式会社RELATION X (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社RELATION X 所属ライバー様</strong> - VTuber (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社HELLOWORLD (ハローワールド)</strong> - VTuber (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>非公開企業依頼</strong> - VTuber作成
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社Looop (ループ)</strong> - YouTube歌ってみたイラスト作成 (20万回再生)
+				</li>
+				<li style="padding: 10px 0; font-size: 1.05em; color: #555;">
+					<strong>徳島ご当地ヒーロー蒼竜神マヴェル</strong> - VTuber化
+				</li>
+			</ul>
+		</div>
+
+		<!-- Contact Section -->
+		<div style="max-width: 900px; margin: 0 auto; background: #f5f5f5; padding: 40px; border-radius: 10px;">
+			<h3 style="font-size: 1.8em; margin-bottom: 20px;">Contact / お問い合わせ</h3>
+			<p style="font-size: 1.1em; margin-bottom: 30px; color: #555;">
+				For commission inquiries, please fill out the form below:<br>
+				ご依頼のお問い合わせは以下のフォームからお願いします:
+			</p>
+
+			<form action="{{ url_for('contact_submit') }}" method="POST" style="max-width: 700px; margin: 0 auto;">
+				<div style="margin-bottom: 20px;">
+					<label for="name" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">Name / お名前 <span style="color: red;">*</span></label>
+					<input type="text" id="name" name="name" required style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box;">
+				</div>
+
+				<div style="margin-bottom: 20px;">
+					<label for="email" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">Email / メールアドレス <span style="color: red;">*</span></label>
+					<input type="email" id="email" name="email" required style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box;">
+				</div>
+
+				<div style="margin-bottom: 20px;">
+					<label for="subject" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">Subject / 件名 <span style="color: red;">*</span></label>
+					<select id="subject" name="subject" required style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box; background-color: white;">
+						<option value="">選択してください / Please select</option>
+						<option value="Vtuberデザイン+Live2Dモデリング">Vtuberデザイン+Live2Dモデリング / VTuber Design + Live2D Rigging</option>
+						<option value="キャラクターデザイン">キャラクターデザイン / Character Design</option>
+						<option value="イラスト作成">イラスト作成 / Illustration</option>
+						<option value="アニメーション動画作成">アニメーション動画作成 / Animation Video</option>
+					</select>
+				</div>
+
+				<div style="margin-bottom: 20px;">
+					<label for="message" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">Message / メッセージ <span style="color: red;">*</span></label>
+					<textarea id="message" name="message" required rows="8" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box; resize: vertical;"></textarea>
+				</div>
+
+				<div style="text-align: center; margin-top: 30px;">
+					<button type="submit" style="padding: 15px 50px; background: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 1.2em; cursor: pointer; font-weight: bold;">Send / 送信</button>
+				</div>
+			</form>
+
+			<div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #ddd;">
+				<p style="font-size: 1em; color: #666; margin-bottom: 15px;">Or contact directly via email / または直接メールでご連絡:</p>
+				<p style="font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 30px;">
+					<a href="mailto:ninta.illustration@gmail.com" style="color: #4CAF50; text-decoration: none;">ninta.illustration@gmail.com</a>
+				</p>
+			</div>
+
+			<div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+				<a class="button" href="https://twitter.com/ninta_mk3" style="padding: 10px 20px; background: #1DA1F2; color: white; text-decoration: none; border-radius: 5px;">Twitter</a>
+				<a class="button" href="https://www.youtube.com/@nintaArt" style="padding: 10px 20px; background: #FF0000; color: white; text-decoration: none; border-radius: 5px;">YouTube</a>
+				<a class="button" href="https://www.pixiv.net/users/43235147" style="padding: 10px 20px; background: #0096FA; color: white; text-decoration: none; border-radius: 5px;">Pixiv</a>
+			</div>
+		</div>
+
+		{% if userid != 0 %}
+		<div style="margin-top: 60px; text-align: left; max-width: 1200px; margin-left: auto; margin-right: auto;">
+			<h3>Admin Panel</h3>
+			<div class="clear_both">
+				<div class="float_left">
+					<h2>Upload posts</h2>
+					<p>
+						<form action="{{ url_for('userpage.submission') }}" method="post">
+							<div>
+							<label for="title1">title</label><br>
+							<input type="text" name="title" id="title" required>
+							</div>
+							<div>
+							<label for="post1">post from X or YouTube</label><br>
+							<input type='text' name="post" id="post" required minlength="4">
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Delete posts</h2>
+					<p>
+						<form action="{{ url_for('userpage.deletepost') }}" method="post">
+							<div>
+							<label for="id">ID</label><br>
+							<input type="number" name="id" id="id" required>
+							<button>post</button>
+						</form>
+					</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Creat new category tags</h2>
+						<form action="{{ url_for('tag.createtag') }}" method="post">
+							<div>
+							<label for="post1">Newtag</label><br>
+							<input type='text' name="newtag" id="newtag" required minlength="1">
+							</div>
+							<button>post</button>
+						</form>
+				</div>
+
+				<div class="float_left">
+					<h2>Add options</h2>
+						<p>
+							<form action="{{ url_for('option.option') }}" method="post">
+								<div>
+									<label for="namejp">JPname</label><br>
+									<input type="text" name="namejp" id="namejp" required>
+								</div>
+								<div>
+									<label for="nameen">ENname</label><br>
+									<input type='text' name="nameen" id="nameen" required>
+								</div>
+								<div>
+									<label for="pricejp">JPprice</label><br>
+									<input type='number' name="pricejp" id="pricejp" required>
+								</div>
+								<div>
+									<label for="priceen">ENprice</label><br>
+									<input type='number' name="priceen" id="priceen" required>
+								</div>
+								<div>
+									<label for="orders">Orders</label><br>
+									<input type='number' name="orders" id="orders" required>
+								</div>
+								<div>
+									<label for="categories">Categories</label><br>
+									<input type='text' name="categories" id="categories" required>
+								</div>
+								<button>post</button>
+							</form>
+						</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Update options</h2>
+						<p>
+							<form action="{{ url_for('option.updateoption') }}" method="post">
+								<div>
+									<label for="id">ID</label><br>
+									<input type="mumber" name="id" id="id" required>
+								</div>
+								<div>
+									<label for="namejp">JPname</label><br>
+									<input type="text" name="namejp" id="namejp" required>
+								</div>
+								<div>
+									<label for="nameen">ENname</label><br>
+									<input type='text' name="nameen" id="nameen" required>
+								</div>
+								<div>
+									<label for="pricejp">JPprice</label><br>
+									<input type='number' name="pricejp" id="pricejp" required>
+								</div>
+								<div>
+									<label for="priceen">ENprice</label><br>
+									<input type='number' name="priceen" id="priceen" required>
+								</div>
+								<div>
+									<label for="orders">Orders</label><br>
+									<input type='number' name="orders" id="orders" required>
+								</div>
+								<div>
+									<label for="categories">Categories</label><br>
+									<input type='text' name="categories" id="categories" required>
+								</div>
+								<button>post</button>
+							</form>
+						</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Delete options</h2>
+					<p>
+						<form action="{{ url_for('option.deleteoption') }}" method="post">
+							<div>
+								<label for="id">ID</label><br>
+								<input type="mumber" name="id" id="id" required>
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Update orders</h2>
+					<p>
+						<form action="{{ url_for('option.updateorder') }}" method="post">
+							<div>
+								<label for="id">ID</label><br>
+								<input type="mumber" name="id" id="id" required>
+							</div>
+							<div>
+								<label for="order">Order</label><br>
+								<input type="mumber" name="order" id="order" required>
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Add column</h2>
+						<p>
+							<form action="{{ url_for('option.addcolumnoption') }}" method="post">
+								<div>
+									<label for="tablename">Table name</label><br>
+									<input type="text" name="tablename" id="tablename" required>
+								</div>
+								<div>
+									<label for="columnname">Column name</label><br>
+									<input type='text' name="columnname" id="columnname" required>
+								</div>
+								<div>
+									<label for="type">Type</label><br>
+									<input type='text' name="type" id="type" required>
+								</div>
+								<div>
+									<label for="default">Default set</label><br>
+									<input type='text' name="default" id="default" required>
+								</div>
+								<button>post</button>
+							</form>
+						</p>
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+		{% endif %}
+
+	</div>
+
+</main>
+{% endblock %}

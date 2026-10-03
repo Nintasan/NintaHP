@@ -4,15 +4,23 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-    <meta name="twitter:card" content="Summary" >
-    <meta name="twitter:url" content="https://ninta.main.jp" >
-    <meta name="twitter:title" content="NintaHP" >
-    <meta name="twitter:description" content="Ninta's Live2D and art portfolios" >
-    <meta name="twitter:image" content="https://ninta.main.jp/static/images/icon2.png" >
+    <meta name="twitter:card" content="summary_large_image" >
+    <meta name="twitter:url" content="https://ninta.info" >
+    <meta name="twitter:title" content="Ninta Live2D&Art - Live2D Commission" >
+    <meta name="twitter:description" content="VTuber Live2D modeling, character design, and illustration commissions" >
+    <meta name="twitter:image" content="https://ninta.info/static/images/favicon_VTube.png" >
     <meta name="twitter:site" content="@ninta_Mk3" >
 
+    <meta property="og:type" content="website" >
+    <meta property="og:url" content="https://ninta.info" >
+    <meta property="og:title" content="Ninta Live2D&Art - Live2D Commission" >
+    <meta property="og:description" content="VTuber Live2D modeling, character design, and illustration commissions" >
+    <meta property="og:image" content="https://ninta.info/static/images/favicon_VTube.png" >
+    <meta property="og:site_name" content="Ninta Live2D&Art" >
+
 	<title> {{ title }} </title>
-	<link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon">
+	<link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon_VTube.png') }}" type="image/png">
+	<link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon_VTube.png') }}">
 	<style>
 	body{font-family: "游ゴシック","arial unicode ms",sans-serif;}
 	</style>

@@ -1,16 +1,52 @@
 {% extends "base.html" %}
 {% block content %}
 <main>
-	<div class="chapterType2">
+	<div class="chapterType2" style="text-align: center; padding: 40px 20px; position: relative;">
 
-		<h1>Home</h1>
+		<!-- Language Switcher -->
+		<div style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+			{% if lang == 'jp' %}
+				<a href="{{ url_for('index_en') }}" style="padding: 10px 18px; background: #4CAF50; color: white; text-decoration: none; border-radius: 25px; font-size: 0.9em; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s;">English</a>
+			{% else %}
+				<a href="{{ url_for('index_jp') }}" style="padding: 10px 18px; background: #4CAF50; color: white; text-decoration: none; border-radius: 25px; font-size: 0.9em; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s;">日本語</a>
+			{% endif %}
+		</div>
+
+		<style>
+		/* Responsive adjustments for mobile */
+		@media (max-width: 768px) {
+			.chapterType2 h1 {
+				font-size: 1.8em !important;
+				margin-top: 40px !important;
+			}
+			.chapterType2 h2 {
+				font-size: 1.3em !important;
+			}
+			.chapterType2 h3 {
+				font-size: 1.2em !important;
+			}
+			.chapterType2 h4 {
+				font-size: 1.1em !important;
+			}
+			.chapterType2 table {
+				font-size: 0.85em;
+			}
+			.chapterType2 table td,
+			.chapterType2 table th {
+				padding: 10px 8px !important;
+			}
+			.video-container {
+				margin-bottom: 15px;
+			}
+		}
+		</style>
 
 		<!-- Flash Messages -->
 		{% with messages = get_flashed_messages(with_categories=true) %}
 			{% if messages %}
-				<div style="margin: 20px 0;">
+				<div style="max-width: 900px; margin: 0 auto 30px;">
 					{% for category, message in messages %}
-						<div class="flash-message flash-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; {% if category == 'success' %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}">
+						<div style="padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; {% if category == 'success' %}background-color: #d4edda; color: #155724; border-left: 4px solid #28a745;{% else %}background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545;{% endif %}">
 							{{ message }}
 						</div>
 					{% endfor %}
@@ -18,343 +54,532 @@
 			{% endif %}
 		{% endwith %}
 
-		<!-- Stream Schedule -->
-		{% include "stream_schedule.html" %}
+		{% if lang == 'jp' %}
+			<h1 style="font-size: 2.2em; margin-bottom: 30px; font-weight: normal;">Live2Dモデリング依頼受付</h1>
+		{% else %}
+			<h1 style="font-size: 2.2em; margin-bottom: 30px; font-weight: normal;">Accepting Commission Requests</h1>
+		{% endif %}
 
-		<!-- Live2D Avatar Display - Single Model with Switch Button -->
-		<div style="text-align: center; margin: 20px auto;">
-			<!-- Model Switch Buttons -->
-			<div style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center;">
-				<button id="btn-amamizu" class="button" style="margin: 0 10px; padding: 10px 20px; background: #67b7ea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 220px; height: 100px;">エクストラ / Extra</button>
-				<button id="btn-michelle" class="button" style="margin: 0 10px; padding: 10px 20px; background: #ddd; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 220px; height: 100px;">アンリミテッド / Unlimited</button>
-			</div>
+		<!-- Social Media Links -->
+		<div style="margin-bottom: 40px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+			<a class="button" href="https://twitter.com/ninta_mk3" style="padding: 12px; background: #000000; color: white; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s;" title="X (Twitter)">
+				<svg style="width: 28px; height: 28px; fill: white;" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+			</a>
+			<a class="button" href="https://www.youtube.com/@nintaArt" style="padding: 12px; background: #FF0000; color: white; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s;" title="YouTube">
+				<svg style="width: 28px; height: 28px; fill: white;" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+			</a>
+			<a class="button" href="https://www.pixiv.net/users/43235147" style="padding: 12px; background: #0096FA; color: white; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s;" title="Pixiv">
+				<svg style="width: 28px; height: 28px; fill: white;" viewBox="0 0 24 24"><path d="M4.935 0A4.924 4.924 0 0 0 0 4.935v14.13A4.924 4.924 0 0 0 4.935 24h14.13A4.924 4.924 0 0 0 24 19.065V4.935A4.924 4.924 0 0 0 19.065 0zm7.81 4.547c2.181 0 4.058.676 5.399 1.847a6.118 6.118 0 0 1 2.116 4.66c.005 1.854-.88 3.476-2.257 4.563-1.375 1.092-3.225 1.697-5.258 1.697h-2.042v5.433H8.508V4.547zm-2.195 3.043v7.381h2.042c1.394 0 2.468-.354 3.175-1.029.71-.675 1.097-1.679 1.097-2.884 0-1.206-.387-2.21-1.097-2.885-.707-.675-1.781-1.029-3.175-1.029z"/></svg>
+			</a>
+		</div>
 
-			<!-- Live2D Widget Container -->
-			<div id="live2d-widget" style="width: 800px; height: 1200px; margin: 0 auto; position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; overflow: hidden;">
-				<canvas id="live2d-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+		<!-- Sample Videos Section -->
+		<div style="max-width: 1200px; margin: 0 auto 60px;">
+			<h3 style="font-size: 1.5em; margin-bottom: 30px;">{% if lang == 'jp' %}サンプル作品{% else %}Sample Works{% endif %}</h3>
+
+			<ul class="Live2Dgallerry-contents" style="list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+				<li style="flex: 1 1 300px; max-width: 400px;">
+					<div class="video-container">
+						<iframe width="100%" height="315" src="https://www.youtube.com/embed/RudlKlhv6k8?si=CLsTeB5dVc4OSGk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</li>
+				<li style="flex: 1 1 300px; max-width: 400px;">
+					<div class="video-container">
+						<iframe width="100%" height="315" src="https://www.youtube.com/embed/FBW6laSdoVQ?si=7LvXZ3Cz74X312H_" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</li>
+				<li style="flex: 1 1 300px; max-width: 400px;">
+					<div class="video-container">
+						<iframe width="100%" height="315" src="https://www.youtube.com/embed/k4lmJiDOHxE?si=NLTmGNIUJGmPeXCt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<!-- VTuber Artwork Gallery -->
+		<div style="max-width: 1200px; margin: 0 auto 60px;">
+			<h3 style="font-size: 1.5em; margin-bottom: 30px;">{% if lang == 'jp' %}作品ギャラリー{% else %}Artwork Gallery{% endif %}</h3>
+
+			<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 0;">
+				{% for image in vtuber_images %}
+				<div style="border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; cursor: pointer;" onclick="openImageModal('{{ image.original }}')">
+					<img src="{{ image.thumbnail }}" alt="VTuber Art" style="width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 1/1;" loading="lazy">
+				</div>
+				{% endfor %}
 			</div>
 		</div>
 
-		<!-- Load PIXI.js v6 (pixi-live2d-display requires v6) -->
-		<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
-		<!-- Load Live2D Cubism Core -->
-		<script src="/static/live2d/Core/live2dcubismcore.min.js"></script>
-		<!-- Load pixi-live2d-display using unpkg CDN -->
-		<script src="https://unpkg.com/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
-		<!-- Load widget script -->
-		<script src="/static/live2d/live2d-widget.js"></script>
+		<!-- Image Modal -->
+		<div id="imageModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); padding: 20px; box-sizing: border-box;" onclick="closeImageModal()">
+			<span style="position: absolute; top: 20px; right: 40px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; transition: 0.3s;" onclick="closeImageModal()">&times;</span>
+			<img id="modalImage" style="margin: auto; display: block; max-width: 90%; max-height: 90%; object-fit: contain; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+		</div>
 
-    	<img class="fig1" src="/static/images/icon2.png">
-        <h1>Name: ニンタ(Ninta)</h1>
-        <h3>I can take some commissions to design character art, rig Live2D avatar, channel art, icon and so on!<br>キャラクターデザイン、Live2Dモデリング、イラスト作成のご依頼お受けします。ご依頼の詳細はContactから。<br>
-		実績/past works:<br>
-		 live2D 株式会社VIC/VIC inc.(Runa Kguya belonged)<br>
-		Art & Live2D 株式会社ライバー/liver inc.(Ritsu Takatsuki belonged)</h3>
+		<script>
+		function openImageModal(imageSrc) {
+			document.getElementById('imageModal').style.display = 'block';
+			document.getElementById('modalImage').src = imageSrc;
+			document.body.style.overflow = 'hidden';
+		}
 
-        
+		function closeImageModal() {
+			document.getElementById('imageModal').style.display = 'none';
+			document.body.style.overflow = 'auto';
+		}
 
-        <a class="button" href="https://twitter.com/ninta_mk3">Twitter</a>
-        <a class="button" href="https://www.pixiv.net/users/43235147">Pixiv</a>
-        <a class="button" href="https://www.twitch.tv/ninta_live2d">Twitch</a>
-		<a class="button" href="https://www.youtube.com/@nintaArt">YouTube</a>
-		<a class="button" href="https://ko-fi.com/nintajp">Ko-fi</a>
+		// ESCキーでモーダルを閉じる
+		document.addEventListener('keydown', function(event) {
+			if (event.key === 'Escape') {
+				closeImageModal();
+			}
+		});
+		</script>
 
+		<!-- Floating Contact Button (Mobile Only) -->
+		<style>
+		.floating-contact-btn {
+			display: none;
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			width: 60px;
+			height: 60px;
+			background: #4CAF50;
+			border-radius: 50%;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+			cursor: pointer;
+			z-index: 999;
+			transition: all 0.3s;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.floating-contact-btn:hover {
+			transform: scale(1.1);
+			box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+		}
+		.floating-contact-btn svg {
+			width: 30px;
+			height: 30px;
+			fill: white;
+		}
+		@media (max-width: 768px) {
+			.floating-contact-btn {
+				display: flex;
+			}
+		}
+		</style>
 
-		
-		{% if userid != 0 %}
-		<div class="clear_both">
-			<div class="float_left">
-				<h2>Upload posts</h2>
-				<p>
-					<form action="{{ url_for('userpage.submission') }}" method="post">
-						<div>
-						<label for="title1">title</label><br>
-						<input type="text" name="title" id="title" required>
-						</div>
-						<div>
-						<label for="post1">post from X or YouTube</label><br>
-						<input type='text' name="post" id="post" required minlength="4">
-						</div>
-						<button>post</button>
-					</form>
-				</p>
-			</div>
+		<a href="#contact-form" class="floating-contact-btn" title="{% if lang == 'jp' %}お問い合わせ{% else %}Contact{% endif %}">
+			<svg viewBox="0 0 24 24">
+				<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+			</svg>
+		</a>
 
-			<h2>Delete posts</h2>
-			<p>
-				<form action="{{ url_for('userpage.deletepost') }}" method="post">
-					<div>
-					<label for="id">ID</label><br>
-					<input type="number" name="id" id="id" required>
-					<button>post</button>
-				</form>
+		<!-- About Section -->
+		<div style="max-width: 900px; margin: 0 auto 40px; background: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+			<h3 style="font-size: 1.8em; margin-bottom: 20px; color: #333;">{% if lang == 'jp' %}自己紹介{% else %}About{% endif %}</h3>
+			<p style="font-size: 1.1em; line-height: 1.8; color: #555; margin-bottom: 20px;">
+				{% if lang == 'jp' %}
+					名前: ニンタ<br>
+					環境: CLIP STUDIO PAINT PRO / Live2D Cubism Editor
+				{% else %}
+					Name: NINTA<br>
+					Tools: CLIP STUDIO PAINT PRO / Live2D Cubism Editor
+				{% endif %}
+			</p>
+			<p style="font-size: 1.1em; line-height: 1.8; color: #555; margin-bottom: 30px;">
+				{% if lang == 'jp' %}
+					ゲームキャラクターデザインイラスト、Vtuberキャラデザ・モデリングの依頼お受けしております。<br>
+					ビデオ電話での打ち合わせ、英語での会話など可能です。<br>
+					お気軽にご相談ください!
+				{% else %}
+					I can take commissions for character design, VTuber design & Live2D rigging, illustrations, and more!<br>
+					Video call meetings and English conversation are available.<br>
+					Feel free to contact me!
+				{% endif %}
+			</p>
+
+			<h4 style="font-size: 1.4em; margin-bottom: 15px; color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">
+				{% if lang == 'jp' %}企業案件実績 (2020~2026){% else %}Corporate Projects (2020~2026){% endif %}
+			</h4>
+			<ul style="list-style: none; padding: 0; margin-bottom: 30px;">
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					{% if lang == 'jp' %}
+						<strong>aisaac(アイザック)株式会社</strong> - AIアプリ『Aimy(アイミー)』(ユーザー数10万人突破 / ゲーム用Live2D・イラスト担当)
+					{% else %}
+						<strong>aisaac Corporation</strong> - AI App "Aimy" (Over 100,000 users / Game Live2D & Illustration)
+					{% endif %}
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社VIC (輝夜月所属)</strong> - VTuber (Live2D担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社ライバー (高槻りつ所属)</strong> - VTuber (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>IRIAMライバー深見ヨル様</strong> - VTuber事務所bond (Live2Dモデリング担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>まがれつ様 (登録者20万人)</strong> - 株式会社RELATION X (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社RELATION X 所属ライバー様</strong> - VTuber (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社HELLOWORLD (ハローワールド)</strong> - VTuber (Live2D・イラスト担当)
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>非公開企業依頼</strong> - VTuber作成
+				</li>
+				<li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05em; color: #555;">
+					<strong>株式会社Looop (ループ)</strong> - YouTube歌ってみたイラスト作成 (20万回再生)
+				</li>
+				<li style="padding: 10px 0; font-size: 1.05em; color: #555;">
+					<strong>徳島ご当地ヒーロー蒼竜神マヴェル</strong> - VTuber化
+				</li>
+			</ul>
+		</div>
+
+		<!-- Pricing Section -->
+		<div style="max-width: 900px; margin: 0 auto 40px; background: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+			<h3 style="font-size: 1.8em; margin-bottom: 20px; color: #333; text-align: center;">
+				{% if lang == 'jp' %}料金表{% else %}Pricing{% endif %}
+			</h3>
+			<p style="font-size: 1em; color: #666; text-align: center; margin-bottom: 30px;">
+				{% if lang == 'jp' %}
+					※すべての納品物は商用利用可能です
+				{% else %}
+					* All deliverables are available for commercial use
+				{% endif %}
+			</p>
+
+			<table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+				<thead>
+					<tr style="background: #4CAF50; color: white;">
+						<th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">
+							{% if lang == 'jp' %}サービス内容{% else %}Service{% endif %}
+						</th>
+						<th style="padding: 15px; text-align: right; border-bottom: 2px solid #ddd;">
+							{% if lang == 'jp' %}料金{% else %}Price{% endif %}
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr style="border-bottom: 1px solid #eee;">
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}キャラクターデザイン{% else %}Character Design{% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥100,000〜{% else %}$800~{% endif %}
+						</td>
+					</tr>
+					<tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}Live2Dモデリング（バストアップ）{% else %}Live2D Rigging (Bust-up){% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥200,000〜{% else %}$1,800~{% endif %}
+						</td>
+					</tr>
+					<tr style="border-bottom: 1px solid #eee;">
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}Live2Dモデリング（全身）{% else %}Live2D Rigging (Full Body){% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥250,000〜{% else %}$2,500~{% endif %}
+						</td>
+					</tr>
+					<tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}イラスト作成{% else %}Illustration{% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥30,000〜{% else %}$200~{% endif %}
+						</td>
+					</tr>
+					<tr style="border-bottom: 1px solid #eee;">
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}Live2Dアニメーション動画{% else %}Live2D Animation Video{% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥80,000〜{% else %}$700~{% endif %}
+						</td>
+					</tr>
+					<tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}.cmo3ファイル譲渡{% else %}.cmo3 File Transfer{% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥100,000〜{% else %}$1,000~{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<td style="padding: 15px;">
+							{% if lang == 'jp' %}著作権譲渡＋著作者人格権の不行使{% else %}Copyright Transfer + Waiver of Moral Rights{% endif %}
+						</td>
+						<td style="padding: 15px; text-align: right; font-weight: bold;">
+							{% if lang == 'jp' %}¥100,000〜{% else %}$1,000~{% endif %}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p style="font-size: 0.95em; color: #888; text-align: center; line-height: 1.6;">
+				{% if lang == 'jp' %}
+					※料金は内容により変動する場合がございます。詳細はお問い合わせください。
+				{% else %}
+					* Prices may vary depending on the details. Please contact us for more information.
+				{% endif %}
 			</p>
 		</div>
 
+		<!-- Contact Section -->
+		<div id="contact-form" style="max-width: 900px; margin: 0 auto; background: #f5f5f5; padding: 40px; border-radius: 10px;">
+			<h3 style="font-size: 1.8em; margin-bottom: 20px;">{% if lang == 'jp' %}お問い合わせ{% else %}Contact{% endif %}</h3>
+			<p style="font-size: 1.1em; margin-bottom: 30px; color: #555;">
+				{% if lang == 'jp' %}
+					ご依頼のお問い合わせは以下のフォームからお願いします:
+				{% else %}
+					For commission inquiries, please fill out the form below:
+				{% endif %}
+			</p>
 
-			<div class="float_left">	
-				<h2>Creat new category tags</h2>
-					<form action="{{ url_for('tag.createtag') }}" method="post">
-						<div>
-						<label for="post1">Newtag</label><br>
-						<input type='text' name="newtag" id="newtag" required minlength="1">
-						</div>
-						<button>post</button>
-					</form>
-					{% with messages = get_flashed_messages() %}
-						{% if messages %}
-							<ul class="flash">
-							{% for message in messages %}
-								<li>{{ message }}</li>
-							{% endfor %}
-							</ul>
+			<form action="{{ url_for('contact_submit') }}" method="POST" style="max-width: 700px; margin: 0 auto;">
+				<input type="hidden" name="lang" value="{{ lang }}">
+				<div style="margin-bottom: 20px;">
+					<label for="name" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">
+						{% if lang == 'jp' %}お名前{% else %}Name{% endif %} <span style="color: red;">*</span>
+					</label>
+					<input type="text" id="name" name="name" required style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box;">
+				</div>
+
+				<div style="margin-bottom: 20px;">
+					<label for="email" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">
+						{% if lang == 'jp' %}メールアドレス{% else %}Email{% endif %} <span style="color: red;">*</span>
+					</label>
+					<input type="email" id="email" name="email" required style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box;">
+				</div>
+
+				<div style="margin-bottom: 20px;">
+					<label for="subject" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">
+						{% if lang == 'jp' %}件名{% else %}Subject{% endif %} <span style="color: red;">*</span>
+					</label>
+					<select id="subject" name="subject" required style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box; background-color: white;">
+						{% if lang == 'jp' %}
+							<option value="">選択してください</option>
+							<option value="Vtuberデザイン+Live2Dモデリング">Vtuberデザイン+Live2Dモデリング</option>
+							<option value="キャラクターデザイン">キャラクターデザイン</option>
+							<option value="イラスト作成">イラスト作成</option>
+							<option value="アニメーション動画作成">アニメーション動画作成</option>
+						{% else %}
+							<option value="">Please select</option>
+							<option value="VTuber Design + Live2D Rigging">VTuber Design + Live2D Rigging</option>
+							<option value="Character Design">Character Design</option>
+							<option value="Illustration">Illustration</option>
+							<option value="Animation Video">Animation Video</option>
 						{% endif %}
-					{% endwith %}
+					</select>
+				</div>
+
+				<div style="margin-bottom: 20px;">
+					<label for="message" style="display: block; font-size: 1.1em; margin-bottom: 8px; color: #333;">
+						{% if lang == 'jp' %}メッセージ{% else %}Message{% endif %} <span style="color: red;">*</span>
+					</label>
+					<textarea id="message" name="message" required rows="8" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box; resize: vertical;"></textarea>
+				</div>
+
+				<div style="text-align: center; margin-top: 30px;">
+					<button type="submit" style="padding: 15px 50px; background: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 1.2em; cursor: pointer; font-weight: bold;">
+						{% if lang == 'jp' %}送信{% else %}Send{% endif %}
+					</button>
+				</div>
+			</form>
+
+			<div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #ddd;">
+				<p style="font-size: 1em; color: #666; margin-bottom: 15px;">
+					{% if lang == 'jp' %}または直接メールでご連絡:{% else %}Or contact directly via email:{% endif %}
+				</p>
+				<p style="font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 30px;">
+					<a href="mailto:ninta.illustration@gmail.com" style="color: #4CAF50; text-decoration: none;">ninta.illustration@gmail.com</a>
+				</p>
 			</div>
-				
-			<div class="float_left">
-				<h2>Add options</h2>
+		</div>
+
+		{% if userid != 0 %}
+		<div style="margin-top: 60px; text-align: left; max-width: 1200px; margin-left: auto; margin-right: auto;">
+			<h3>Admin Panel</h3>
+			<div class="clear_both">
+				<div class="float_left">
+					<h2>Upload posts</h2>
 					<p>
-						<form action="{{ url_for('option.option') }}" method="post">
+						<form action="{{ url_for('userpage.submission') }}" method="post">
 							<div>
-								<label for="namejp">JPname</label><br>
-								<input type="text" name="namejp" id="namejp" required>
+							<label for="title1">title</label><br>
+							<input type="text" name="title" id="title" required>
 							</div>
 							<div>
-								<label for="nameen">ENname</label><br>
-								<input type='text' name="nameen" id="nameen" required>
-							</div>
-							<div>
-								<label for="pricejp">JPprice</label><br>
-								<input type='number' name="pricejp" id="pricejp" required>
-							</div>
-							<div>
-								<label for="priceen">ENprice</label><br>
-								<input type='number' name="priceen" id="priceen" required>
-							</div>
-							<div>
-								<label for="orders">Orders</label><br>
-								<input type='number' name="orders" id="orders" required>
-							</div>
-							<div>
-								<label for="categories">Categories</label><br>
-								<input type='text' name="categories" id="categories" required>
+							<label for="post1">post from X or YouTube</label><br>
+							<input type='text' name="post" id="post" required minlength="4">
 							</div>
 							<button>post</button>
 						</form>
 					</p>
-			</div>
+				</div>
 
-			<div class="float_left">
-				<h2>Update options</h2>
+				<div class="float_left">
+					<h2>Delete posts</h2>
 					<p>
-						<form action="{{ url_for('option.updateoption') }}" method="post">
+						<form action="{{ url_for('userpage.deletepost') }}" method="post">
+							<div>
+							<label for="id">ID</label><br>
+							<input type="number" name="id" id="id" required>
+							<button>post</button>
+						</form>
+					</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Creat new category tags</h2>
+						<form action="{{ url_for('tag.createtag') }}" method="post">
+							<div>
+							<label for="post1">Newtag</label><br>
+							<input type='text' name="newtag" id="newtag" required minlength="1">
+							</div>
+							<button>post</button>
+						</form>
+				</div>
+
+				<div class="float_left">
+					<h2>Add options</h2>
+						<p>
+							<form action="{{ url_for('option.option') }}" method="post">
+								<div>
+									<label for="namejp">JPname</label><br>
+									<input type="text" name="namejp" id="namejp" required>
+								</div>
+								<div>
+									<label for="nameen">ENname</label><br>
+									<input type='text' name="nameen" id="nameen" required>
+								</div>
+								<div>
+									<label for="pricejp">JPprice</label><br>
+									<input type='number' name="pricejp" id="pricejp" required>
+								</div>
+								<div>
+									<label for="priceen">ENprice</label><br>
+									<input type='number' name="priceen" id="priceen" required>
+								</div>
+								<div>
+									<label for="orders">Orders</label><br>
+									<input type='number' name="orders" id="orders" required>
+								</div>
+								<div>
+									<label for="categories">Categories</label><br>
+									<input type='text' name="categories" id="categories" required>
+								</div>
+								<button>post</button>
+							</form>
+						</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Update options</h2>
+						<p>
+							<form action="{{ url_for('option.updateoption') }}" method="post">
+								<div>
+									<label for="id">ID</label><br>
+									<input type="mumber" name="id" id="id" required>
+								</div>
+								<div>
+									<label for="namejp">JPname</label><br>
+									<input type="text" name="namejp" id="namejp" required>
+								</div>
+								<div>
+									<label for="nameen">ENname</label><br>
+									<input type='text' name="nameen" id="nameen" required>
+								</div>
+								<div>
+									<label for="pricejp">JPprice</label><br>
+									<input type='number' name="pricejp" id="pricejp" required>
+								</div>
+								<div>
+									<label for="priceen">ENprice</label><br>
+									<input type='number' name="priceen" id="priceen" required>
+								</div>
+								<div>
+									<label for="orders">Orders</label><br>
+									<input type='number' name="orders" id="orders" required>
+								</div>
+								<div>
+									<label for="categories">Categories</label><br>
+									<input type='text' name="categories" id="categories" required>
+								</div>
+								<button>post</button>
+							</form>
+						</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Delete options</h2>
+					<p>
+						<form action="{{ url_for('option.deleteoption') }}" method="post">
+							<div>
+								<label for="id">ID</label><br>
+								<input type="mumber" name="id" id="id" required>
+							</div>
+							<button>post</button>
+						</form>
+					</p>
+				</div>
+
+				<div class="float_left">
+					<h2>Update orders</h2>
+					<p>
+						<form action="{{ url_for('option.updateorder') }}" method="post">
 							<div>
 								<label for="id">ID</label><br>
 								<input type="mumber" name="id" id="id" required>
 							</div>
 							<div>
-								<label for="namejp">JPname</label><br>
-								<input type="text" name="namejp" id="namejp" required>
-							</div>
-							<div>
-								<label for="nameen">ENname</label><br>
-								<input type='text' name="nameen" id="nameen" required>
-							</div>
-							<div>
-								<label for="pricejp">JPprice</label><br>
-								<input type='number' name="pricejp" id="pricejp" required>
-							</div>
-							<div>
-								<label for="priceen">ENprice</label><br>
-								<input type='number' name="priceen" id="priceen" required>
-							</div>
-							<div>
-								<label for="orders">Orders</label><br>
-								<input type='number' name="orders" id="orders" required>
-							</div>
-							<div>
-								<label for="categories">Categories</label><br>
-								<input type='text' name="categories" id="categories" required>
+								<label for="order">Order</label><br>
+								<input type="mumber" name="order" id="order" required>
 							</div>
 							<button>post</button>
 						</form>
 					</p>
-			</div>
-			
-			<div class="float_left">
-				<h2>Delete options</h2>
-				<p>
-					<form action="{{ url_for('option.deleteoption') }}" method="post">
-						<div>
-							<label for="id">ID</label><br>
-							<input type="mumber" name="id" id="id" required>
-						</div>
-						<button>post</button>
-					</form>
-				</p>
-			</div>
+				</div>
 
-			<div class="float_left">
-				<h2>Update orders</h2>
-				<p>
-					<form action="{{ url_for('option.updateorder') }}" method="post">
-						<div>
-							<label for="id">ID</label><br>
-							<input type="mumber" name="id" id="id" required>
-						</div>
-						<div>
-							<label for="order">Order</label><br>
-							<input type="mumber" name="order" id="order" required>
-						</div>
-						<button>post</button>
-					</form>
-				</p>
+				<div class="float_left">
+					<h2>Add column</h2>
+						<p>
+							<form action="{{ url_for('option.addcolumnoption') }}" method="post">
+								<div>
+									<label for="tablename">Table name</label><br>
+									<input type="text" name="tablename" id="tablename" required>
+								</div>
+								<div>
+									<label for="columnname">Column name</label><br>
+									<input type='text' name="columnname" id="columnname" required>
+								</div>
+								<div>
+									<label for="type">Type</label><br>
+									<input type='text' name="type" id="type" required>
+								</div>
+								<div>
+									<label for="default">Default set</label><br>
+									<input type='text' name="default" id="default" required>
+								</div>
+								<button>post</button>
+							</form>
+						</p>
+				</div>
 			</div>
-
-			<div class="float_left">
-				<h2>Add column</h2>
-					<p>
-						<form action="{{ url_for('option.addcolumnoption') }}" method="post">
-							<div>
-								<label for="tablename">Table name</label><br>
-								<input type="text" name="tablename" id="tablename" required>
-							</div>
-							<div>
-								<label for="columnname">Column name</label><br>
-								<input type='text' name="columnname" id="columnname" required>
-							</div>
-							<div>
-								<label for="type">Type</label><br>
-								<input type='text' name="type" id="type" required>
-							</div>
-							<div>
-								<label for="default">Default set</label><br>
-								<input type='text' name="default" id="default" required>
-							</div>
-							<button>post</button>
-						</form>
-					</p>
-			</div>
+			<div class="clear"></div>
+		</div>
 		{% endif %}
 
-		 <div class="clear"></div>
-		
-		</div>
-
-	<div class="chapterType1"> 
-        <h1>Live2D Pick-up!</h1>
-
-        <ul class="Live2Dgallerry-contents">
-                <li>        <div class="video-container">
-					<iframe width="560" height="315" src="https://www.youtube.com/embed/xeTCihh0kPg?si=_tmWsc5A68Jp4iP0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        </div>
-                    
-                </li>
-                <li>
-                    <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/d_gSRCxzKxU?si=a2eZ-NciuCxN6y4o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            </div>
-                    
-                    
-                </li>
-            <li>
-                    <div class="video-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/k4lmJiDOHxE?si=NLTmGNIUJGmPeXCt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            </div>
-                    
-                    
-                </li>
-            </ul>	
-       </div>
-	   <div class="clear"></div>
-    
-         <div class="chapterType2">
-			<h1>ご依頼 / commission</h1>
-			<p>
-			{% include "checkbox.html" %}
-			</p>
-
-
-			<h2>Contact with E-mail: ninta.illustration@gmail.com</h2>
-
-				<h2>Live2Dプラン表 / Live2D plan sheet</h2>
-
-				<p>
-					{% include "plan.html" %}
-				</p>
-
-
-				<div class="clear"></div>
-    	</div>
-         
-        <div class="clear"></div>
-  
-	<div class="chapterType2" style="display: none;">
-	<div id = "seetagareas">
-
-		<h2>Ninta's works</h2>
-
-		<script>
-			$(function() {
-			  $('#seetagsform').on('submit',function(event){
-				event.preventDefault();
-				var tags = $('#ajaxseetags').val();
-				$.ajax({
-				  type : 'POST',
-				  url : '/selecttag' ,
-				  dataType: 'html',
-				  data:{ tags: tags },
-				})
-
-				.done(function(data){
-				  $('#seetagareas').html(data);
-				});
-			  });
-			});
-		  </script>
-
-		<form id="seetagsform">
-			<div>
-				<label for="Selecttags">Select tags</label>
-				<select name="tags" id = "ajaxseetags">
-					{% for tag in tags %}
-					<option value="{{tag[3]}}">{{tag[3]}}</option>
-					{% endfor %}
-				</select>
-				<input type="submit" value="select tags">
-			</div>
-		</form>
-
-			{% include "areacontents.html" %}	
-
-		<div id="contentareas{{ count }}">
-
-			<script>
-				$(function() {
-				  $('#contentform{{ count }}').on('submit',function(event){
-					event.preventDefault();
-					var contents = $('#ajaxcontents{{ count }}').val();
-					$.ajax({
-					  type : 'POST',
-					  url : '/newcontents',
-					  dataType: 'html',
-					  data:{ contents: contents },
-					})
-	
-					.done(function(data){
-					  $('#contentareas{{ count }}').html(data);
-					});
-				  });
-				});
-			</script>
-			<form id ="contentform{{ count }}" >
-				<input type="hidden" value="{{ count }}" id = 'ajaxcontents{{ count }}'>
-				<input class="button3" type="submit" value="more contents">
-			</form>
-		</div>
-
-		</div>
 	</div>
 
 </main>

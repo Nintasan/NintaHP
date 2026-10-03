@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+	<div class="chapterType2" style="text-align: center; padding: 60px 20px;">
+
+		<div style="max-width: 700px; margin: 0 auto;">
+			<!-- Success Icon -->
+			<div style="margin-bottom: 30px;">
+				<svg width="80" height="80" viewBox="0 0 80 80" style="margin: 0 auto;">
+					<circle cx="40" cy="40" r="36" fill="#4CAF50" opacity="0.2"/>
+					<circle cx="40" cy="40" r="30" fill="#4CAF50"/>
+					<path d="M25 40 L35 50 L55 30" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</div>
+
+			{% if lang == 'jp' %}
+				<h1 style="font-size: 2.2em; margin-bottom: 20px; color: #2c3e50;">送信完了</h1>
+				<p style="font-size: 1.2em; color: #555; line-height: 1.8; margin-bottom: 30px;">
+					お問い合わせありがとうございます。<br>
+					メッセージを受け取りました。
+				</p>
+				<p style="font-size: 1em; color: #777; line-height: 1.8; margin-bottom: 40px;">
+					内容を確認次第、2-3営業日以内にご連絡させていただきます。<br>
+					今しばらくお待ちください。
+				</p>
+				<a href="{{ url_for('index_jp') }}" style="display: inline-block; padding: 15px 40px; background: #4CAF50; color: white; text-decoration: none; border-radius: 8px; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: all 0.3s;">
+					ホームに戻る
+				</a>
+			{% else %}
+				<h1 style="font-size: 2.2em; margin-bottom: 20px; color: #2c3e50;">Thank You!</h1>
+				<p style="font-size: 1.2em; color: #555; line-height: 1.8; margin-bottom: 30px;">
+					Thank you for contacting us.<br>
+					We have received your message.
+				</p>
+				<p style="font-size: 1em; color: #777; line-height: 1.8; margin-bottom: 40px;">
+					We will review your inquiry and get back to you within 2-3 business days.<br>
+					Please wait for our response.
+				</p>
+				<a href="{{ url_for('index_en') }}" style="display: inline-block; padding: 15px 40px; background: #4CAF50; color: white; text-decoration: none; border-radius: 8px; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: all 0.3s;">
+					Back to Home
+				</a>
+			{% endif %}
+
+			<div style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #eee;">
+				<p style="font-size: 0.95em; color: #999;">
+					{% if lang == 'jp' %}
+						お急ぎの場合は、直接メールでご連絡ください:<br>
+					{% else %}
+						For urgent inquiries, please contact us directly:<br>
+					{% endif %}
+					<a href="mailto:ninta.illustration@gmail.com" style="color: #4CAF50; text-decoration: none; font-weight: 600;">ninta.illustration@gmail.com</a>
+				</p>
+			</div>
+		</div>
+
+	</div>
+</main>
+
+<style>
+@media (max-width: 768px) {
+	.chapterType2 h1 {
+		font-size: 1.8em !important;
+	}
+	.chapterType2 p {
+		font-size: 1em !important;
+	}
+	.chapterType2 a {
+		padding: 12px 30px !important;
+		font-size: 1em !important;
+	}
+}
+</style>
+
+{% endblock %}

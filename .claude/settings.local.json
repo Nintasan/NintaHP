@@ -1,8 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c \"from PIL import Image; print(''PIL/Pillow is installed'')\")",
-      "Bash(python -c \"import sqlite3; conn = sqlite3.connect(''ninta.db''); cursor = conn.cursor(); cursor.execute(\"\"PRAGMA table_info(stream_schedule)\"\"); print(''stream_schedule columns:''); [print(row) for row in cursor.fetchall()]; conn.close()\")"
+      "Bash(git checkout public_html/static/css/style.css)",
+      "Bash(git checkout public_html/templates/header.html public_html/templates/fooder.html)"
     ],
     "deny": [],
     "ask": []
