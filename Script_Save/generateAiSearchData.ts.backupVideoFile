@@ -1,0 +1,2150 @@
+/**
+ * AI検索用データ生成スクリプト（完全版 - Free/Paidハイブリッド対応）
+ *
+ * 機能:
+ * 1. postsテーブルのsourceからYouTube/Twitterのテキスト情報、画像解析、metadataを取得
+ * 2. post_chunksテーブルにチャンク化したデータを保存（テキスト、画像OCR、視覚分析、字幕）
+ * 3. Geminiでsummary, ai_tags, ai_title, user_intentを生成してpostsテーブルに保存
+ *
+ * 動画解析失敗の確認方法:
+ * -- YouTube動画解析失敗ポスト検索:
+ * SELECT id, source, metadata->>'$.youtube.video_analysis_error' as error
+ * FROM posts
+ * WHERE JSON_EXTRACT(metadata, '$.youtube.video_analysis_failed') = true;
+ *
+ * -- Twitter動画解析失敗ポスト検索:
+ * SELECT id, source, metadata->>'$.twitter.video_analysis_errors' as errors
+ * FROM posts
+ * WHERE JSON_EXTRACT(metadata, '$.twitter.video_analysis_failed') = true;
+ */
+
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import { AiSearchDataService } from '../src/application/service/utils/aiSearchDataService';
+import { getTwitterFullData } from '../src/application/service/utils/twitterApiService';
+import { MediaAnalysisService } from '../src/application/service/utils/mediaAnalysisService';
+import { google } from 'googleapis';
+import { YoutubeTranscript } from 'youtube-transcript';
+import * as uuid from 'uuid';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import youtubedl from 'youtube-dl-exec';
+import { Storage } from '@google-cloud/storage';
+
+dotenv.config();
+
+const aiService = new AiSearchDataService();
+const mediaService = new MediaAnalysisService();
+const youtube = google.youtube({ version: 'v3', auth: process.env.YOUTUBE_API_KEY });
+
+// ===== Google Cloud Storage Configuration =====
+let storage: Storage | null = null;
+let gcsBucket: string | null = null;
+
+// Initialize GCS if credentials are available
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  try {
+    storage = new Storage();
+    gcsBucket = process.env.GCS_BUCKET_NAME || null;
+    if (gcsBucket) {
+      console.log(`✅ GCS initialized with bucket: ${gcsBucket}`);
+    } else {
+      console.warn('⚠️  GCS_BUCKET_NAME not set - GCS video upload disabled');
+      storage = null;
+    }
+  } catch (error: any) {
+    console.warn(`⚠️  Failed to initialize GCS: ${error.message}`);
+    storage = null;
+  }
+}
+
+// ===== Gemini Model Configuration =====
+const GEMINI_MODEL_FREE = 'gemini-2.5-flash-lite';
+const GEMINI_MODEL_PAID = 'gemini-2.5-flash-lite';
+
+// ===== Pricing Configuration (USD) =====
+// Gemini 2.5 Flash Lite (Vertex AI / AI Studio Paid)
+const PRICING = {
+  inputTokensPer1M: 0.075,     // $0.075 per 1M input tokens (Gemini 2.5 Flash Lite)
+  outputTokensPer1M: 0.30,     // $0.30 per 1M output tokens
+  imagePer1024x1024: 0.00265,  // $0.00265 per image (1024x1024 or smaller)
+  videoTokensPerSecond: 258,   // Approximate tokens per second of video (1fps sampling)
+};
+
+// API使用状況（グローバル）
+let usingPaidAPI = false;  // 有料版APIを使用中かどうか
+let rateLimitReached = false;
+
+// レート制限管理
+interface RateLimitState {
+  consecutiveErrors: number;
+  lastErrorTime: number;
+  currentSleepTime: number;
+  baseSleepTime: number;
+  maxSleepTime: number;
+}
+
+let rateLimitState: RateLimitState = {
+  consecutiveErrors: 0,
+  lastErrorTime: 0,
+  currentSleepTime: 5000,      // 初期: 5秒
+  baseSleepTime: 5000,         // ベース: 5秒
+  maxSleepTime: 300000,        // 最大: 5分
+};
+
+// コスト追跡
+interface CostTracking {
+  inputTokens: number;
+  outputTokens: number;
+  images: number;
+  videoSeconds: number;
+  totalCostUSD: number;
+}
+
+let sessionCost: CostTracking = {
+  inputTokens: 0,
+  outputTokens: 0,
+  images: 0,
+  videoSeconds: 0,
+  totalCostUSD: 0
+};
+
+// ==========================================
+// 🔒 個人情報匿名化ヘルパー関数
+// ==========================================
+
+/**
+ * テキストから個人情報を匿名化する
+ * - ユーザー名（@username）
+ * - チャンネル名
+ * - メールアドレス
+ * - URL内の個人識別子
+ */
+function anonymizeText(text: string, context: 'twitter' | 'youtube' = 'twitter'): string {
+  if (!text) return text;
+
+  let anonymized = text;
+
+  // Twitterユーザー名の匿名化: @username → [USER]
+  anonymized = anonymized.replace(/@[\w_]{1,15}\b/g, '[USER]');
+
+  // メールアドレスの匿名化
+  anonymized = anonymized.replace(/[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]');
+
+  // YouTube固有: チャンネル名のパターン（"by ChannelName", "ChannelName official"など）
+  if (context === 'youtube') {
+    // "by <Name>" パターン
+    anonymized = anonymized.replace(/\bby\s+[A-Z][\w\s]{2,30}(?=\s|$|\.)/g, 'by [CREATOR]');
+    // チャンネル署名パターン（末尾の - ChannelName など）
+    anonymized = anonymized.replace(/[-–—]\s*[A-Z][\w\s]{2,30}\s*$/gm, '- [CREATOR]');
+  }
+
+  // URL内の個人識別子を匿名化（twitter.com/username, youtube.com/@channelなど）
+  anonymized = anonymized.replace(/(twitter\.com|x\.com)\/[\w_]+/g, '$1/[USER]');
+  anonymized = anonymized.replace(/youtube\.com\/@[\w-]+/g, 'youtube.com/@[CHANNEL]');
+  anonymized = anonymized.replace(/youtube\.com\/c\/[\w-]+/g, 'youtube.com/c/[CHANNEL]');
+  anonymized = anonymized.replace(/youtube\.com\/channel\/[\w-]+/g, 'youtube.com/channel/[CHANNEL]');
+
+  return anonymized;
+}
+
+/**
+ * 動画の長さに応じた字幕のハードキャップを計算
+ */
+function getTranscriptCharLimit(durationSeconds: number): number {
+  const minutes = durationSeconds / 60;
+  if (minutes < 10) return 2400;
+  if (minutes < 30) return 4800;
+  if (minutes < 60) return 7200;
+  return 12000;
+}
+
+/**
+ * 統合AI処理: 1回のGeminiリクエストで全ての処理を実行
+ * - テキスト匿名化
+ * - 字幕要約 & 匿名化
+ * - AI Fields生成 (summary, ai_tags, ai_title, user_intent)
+ */
+interface UnifiedAIInput {
+  sourceText?: string;  // Twitter/YouTubeの生テキスト
+  transcript?: string;  // YouTube字幕
+  transcriptCharLimit?: number;
+  videoAnalysis?: string;  // 映像解析結果
+  imageAnalysis?: string;  // 画像解析結果
+  existingTags?: string[];  // 既存タグ
+  mediaType: 'twitter' | 'youtube';
+}
+
+interface UnifiedAIOutput {
+  anonymizedText: string;  // 匿名化されたテキスト
+  processedTranscript?: string;  // 要約 & 匿名化された字幕
+  ai_title: string;
+  summary: string;
+  ai_tags: string[];
+  user_intent: string[];
+}
+
+async function processWithUnifiedAI(input: UnifiedAIInput): Promise<UnifiedAIOutput> {
+  try {
+    console.log(`     🔧 Using ${usingPaidAPI ? 'PAID 💰 (Vertex AI)' : 'FREE 🆓 (AI Studio)'} API for unified processing`);
+    const model = getGeminiModel();
+
+    // 既存タグの文字列化
+    const existingTagsStr = input.existingTags && input.existingTags.length > 0
+      ? `\n\nExisting tags in database (prioritize these): ${input.existingTags.join(', ')}`
+      : '';
+
+    // 統合プロンプトを構築
+    let contentSections = [];
+
+    if (input.sourceText) {
+      contentSections.push(`=== SOURCE TEXT (${input.mediaType.toUpperCase()}) ===\n${input.sourceText.substring(0, 5000)}`);
+    }
+
+    if (input.transcript) {
+      contentSections.push(`=== VIDEO TRANSCRIPT (RAW) ===\n${input.transcript.substring(0, 50000)}`);
+    }
+
+    if (input.videoAnalysis) {
+      contentSections.push(`=== VIDEO ANALYSIS ===\n${input.videoAnalysis.substring(0, 10000)}`);
+    }
+
+    if (input.imageAnalysis) {
+      contentSections.push(`=== IMAGE ANALYSIS ===\n${input.imageAnalysis.substring(0, 5000)}`);
+    }
+
+    const prompt = `Process this Live2D/VTuber content and return a comprehensive JSON response:
+
+${contentSections.join('\n\n')}
+${existingTagsStr}
+
+TASK 1: Anonymize source text
+- Remove all personal information (names, usernames, channels, emails, URLs with usernames)
+- Replace with generic placeholders like [USER], [CREATOR], [CHANNEL], [EMAIL]
+
+TASK 2: Summarize & anonymize transcript (if provided)
+- Extract ONLY technical content related to Live2D/VTuber
+- Remove filler words and casual conversation
+- Remove personal information
+- Maximum ${input.transcriptCharLimit || 12000} characters
+- If no technical content, use anonymized original
+
+TASK 3: Generate metadata
+- ai_title: Concise 10-15 word title in English
+- summary: 300-character summary covering technical points and context
+- ai_tags: EXACTLY 5 tags maximum - choose the MOST IMPORTANT tags that clearly identify what this post is about (prioritize existing tags, use lowercase_underscore format)
+- user_intent: 3 practical technical questions this content answers
+
+Return ONLY this JSON structure:
+{
+  "anonymized_text": "anonymized source text here",
+  "processed_transcript": "summarized and anonymized transcript here (or empty if no transcript)",
+  "ai_title": "title here",
+  "summary": "summary here",
+  "ai_tags": ["tag1", "tag2", ...],
+  "user_intent": ["question1", "question2", "question3"]
+}
+
+CRITICAL: All output must be in English. NO personal identifiers allowed.`;
+
+    const result = await callGenerateContent(model, [{ text: prompt }]);
+    const responseText = getTextFromResponse(result);
+
+    // JSONを抽出
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Failed to parse AI response JSON');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    return {
+      anonymizedText: parsed.anonymized_text || anonymizeText(input.sourceText || '', input.mediaType),
+      processedTranscript: parsed.processed_transcript || (input.transcript ? anonymizeText(input.transcript.substring(0, input.transcriptCharLimit || 12000), 'youtube') : undefined),
+      ai_title: parsed.ai_title || '',
+      summary: parsed.summary || '',
+      ai_tags: (parsed.ai_tags || []).slice(0, 5),  // 最大5つに制限
+      user_intent: (parsed.user_intent || []).slice(0, 3)
+    };
+  } catch (error: any) {
+    console.warn(`     ⚠️  Unified AI processing failed: ${error.message.substring(0, 100)}`);
+
+    // レート制限エラーの場合は再スローして処理を停止
+    if (checkRateLimitError(error)) {
+      throw error;
+    }
+
+    // その他のエラーの場合のみフォールバック: 基本的な匿名化のみ
+    console.warn(`     ⚠️  Using fallback processing (anonymization only, no AI fields)`);
+    return {
+      anonymizedText: anonymizeText(input.sourceText || '', input.mediaType),
+      processedTranscript: input.transcript ? anonymizeText(input.transcript.substring(0, input.transcriptCharLimit || 12000), 'youtube') : undefined,
+      ai_title: `${input.mediaType === 'twitter' ? 'Twitter' : 'YouTube'} Post`,
+      summary: 'Content processing failed. Manual review required.',
+      ai_tags: [],
+      user_intent: []
+    };
+  }
+}
+
+// ==========================================
+// 🌟 APIの差異を吸収するヘルパー関数 🌟
+// ==========================================
+
+/**
+ * APIの種類に応じて適切なリクエストを送信する
+ */
+async function callGenerateContent(model: any, parts: any[], debugLabel: string = '') {
+  if (usingPaidAPI) {
+    // Vertex AI形式: { contents: [{ role: 'user', parts: [...] }] }
+    const request = {
+      contents: [{ role: 'user', parts: parts }]
+    };
+
+    // デバッグ: videoMetadataを含むリクエストをログ出力
+    if (parts.some(p => p.videoMetadata)) {
+      const videoMetadata = parts.find(p => p.videoMetadata)?.videoMetadata;
+      console.log(`     🔍 ${debugLabel} Request videoMetadata:`, JSON.stringify(videoMetadata));
+    }
+
+    return await model.generateContent(request);
+  } else {
+    // AI Studio (Free) 形式: [part1, part2, ...]
+    return await model.generateContent(parts);
+  }
+}
+
+/**
+ * Geminiのレスポンスからテキストを安全に取得する
+ */
+function getTextFromResponse(result: any): string {
+  if (usingPaidAPI) {
+    // Vertex AI SDKのレスポンス構造
+    return result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  } else {
+    // AI Studio SDKのレスポンス構造
+    return typeof result?.response?.text === 'function' ? result.response.text() : '';
+  }
+}
+
+/**
+ * APIレスポンスから使用量情報を抽出してコストを計算
+ */
+function trackUsageAndCost(result: any, videoSeconds: number = 0, images: number = 0, logPrefix: string = '', samplingFps: number = 1): number {
+  if (!usingPaidAPI) return 0; // 無料版はコスト計算しない
+
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  try {
+    if (usingPaidAPI) {
+      // Vertex AI: usageMetadata
+      const usage = result?.response?.usageMetadata;
+      inputTokens = usage?.promptTokenCount || 0;
+      outputTokens = usage?.candidatesTokenCount || 0;
+    } else {
+      // AI Studio: usageMetadata
+      const usage = result?.response?.usageMetadata;
+      inputTokens = usage?.promptTokenCount || 0;
+      outputTokens = usage?.candidatesTokenCount || 0;
+    }
+  } catch (e) {
+    console.warn('     ⚠️  Failed to extract usage metadata');
+  }
+
+  // コスト計算
+  const inputCost = (inputTokens / 1_000_000) * PRICING.inputTokensPer1M;
+  const outputCost = (outputTokens / 1_000_000) * PRICING.outputTokensPer1M;
+
+  // 動画はトークンとしてカウント（既に inputTokens に含まれている可能性があるため追加しない）
+  // videoSeconds パラメータは参考情報として記録のみ
+  const imageCost = images * PRICING.imagePer1024x1024;
+  const totalCost = inputCost + outputCost + imageCost;
+
+  // 📊 詳細ログ出力: トークン使用量とコスト分析
+  if (inputTokens > 0 || outputTokens > 0) {
+    // サンプリングを考慮した期待トークン数
+    // 例: 36分 × 0.0833fps = 180フレーム → 180 × 258 tok/frame = 46,440トークン
+    const expectedVideoTokens = videoSeconds > 0 ? Math.round(videoSeconds * samplingFps * PRICING.videoTokensPerSecond) : 0;
+    const tokensPerSecond = videoSeconds > 0 ? (inputTokens / videoSeconds).toFixed(1) : 'N/A';
+    const effectiveFps = videoSeconds > 0 ? (inputTokens / (videoSeconds * PRICING.videoTokensPerSecond)).toFixed(4) : 'N/A';
+
+    console.log(`     ${logPrefix}📊 Token Usage:`);
+    console.log(`        Input:  ${inputTokens.toLocaleString()} tokens (${tokensPerSecond} tok/sec, effective ${effectiveFps}fps)`);
+    console.log(`        Output: ${outputTokens.toLocaleString()} tokens`);
+    if (videoSeconds > 0) {
+      console.log(`        Video:  ${videoSeconds.toFixed(0)}sec × ${samplingFps.toFixed(4)}fps (expected ~${expectedVideoTokens.toLocaleString()} tokens)`);
+      const efficiency = expectedVideoTokens > 0 ? ((inputTokens / expectedVideoTokens) * 100).toFixed(1) : 'N/A';
+      console.log(`        Efficiency: ${efficiency}% of expected tokens (${inputTokens <= expectedVideoTokens * 1.1 ? 'optimized✓' : 'needs check'})`);
+    }
+    console.log(`        Cost:   ${formatCost(totalCost)}`);
+  }
+
+  // セッション合計に加算
+  sessionCost.inputTokens += inputTokens;
+  sessionCost.outputTokens += outputTokens;
+  sessionCost.videoSeconds += videoSeconds;
+  sessionCost.images += images;
+  sessionCost.totalCostUSD += totalCost;
+
+  return totalCost;
+}
+
+/**
+ * コスト情報をフォーマットして表示
+ */
+function formatCost(costUSD: number): string {
+  if (costUSD === 0) return '$0.00 (¥0)';
+
+  const jpy = costUSD * 150; // 1ドル=150円で換算
+
+  if (costUSD < 0.0001) {
+    // 0.01セント未満: マイクロセント表示
+    return `$${costUSD.toFixed(6)} (${(costUSD * 100).toFixed(4)}¢, ¥${jpy.toFixed(4)})`;
+  }
+  if (costUSD < 0.01) {
+    // 1セント未満: セント表示
+    return `$${costUSD.toFixed(4)} (${(costUSD * 100).toFixed(2)}¢, ¥${jpy.toFixed(2)})`;
+  }
+  if (costUSD < 1) {
+    // 1ドル未満: セント表示を追加
+    return `$${costUSD.toFixed(4)} (${(costUSD * 100).toFixed(1)}¢, ¥${jpy.toFixed(1)})`;
+  }
+  // 1ドル以上
+  return `$${costUSD.toFixed(2)} (¥${jpy.toFixed(0)})`;
+}
+
+// ==========================================
+
+/**
+ * Geminiモデルを取得（無料版 or Vertex AI有料版）
+ */
+function getGeminiModel() {
+  const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+  // 有料版に切り替え済みの場合
+  if (usingPaidAPI && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const { VertexAI } = require('@google-cloud/vertexai');
+
+    let projectId = process.env.VERTEX_AI_PROJECT_ID;
+    let location = process.env.VERTEX_AI_LOCATION || 'us-central1';
+
+    if (!projectId) {
+      try {
+        const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS!;
+        const credentials = JSON.parse(fs.readFileSync(credPath, 'utf8'));
+        projectId = credentials.project_id;
+      } catch (error: any) {
+        throw new Error(`Failed to read project ID from credentials file: ${error.message}`);
+      }
+    }
+
+    const vertexAI = new VertexAI({
+      project: projectId,
+      location: location,
+    });
+
+    return vertexAI.getGenerativeModel({ model: GEMINI_MODEL_PAID });
+  }
+
+  // デフォルト: 無料版API
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  return genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+}
+
+function checkRateLimitError(error: any): boolean {
+  const errorMessage = error.message || '';
+  const errorString = JSON.stringify(error);
+
+  const rateLimitPatterns = [
+    '429 Too Many Requests',
+    'Quota exceeded',
+    'quota exceeded',
+    'rate limit',
+    'Rate limit',
+  ];
+
+  return rateLimitPatterns.some(pattern =>
+    errorMessage.includes(pattern) || errorString.includes(pattern)
+  );
+}
+
+async function handleRateLimitError(error: any, context: string): Promise<boolean> {
+  if (!checkRateLimitError(error)) return false;
+
+  // レート制限エラーカウント
+  rateLimitState.consecutiveErrors++;
+  rateLimitState.lastErrorTime = Date.now();
+
+  if (usingPaidAPI) {
+    // 有料版APIもレート制限に達した場合: 自動待機して継続
+    const waitMinutes = Math.min(rateLimitState.consecutiveErrors * 2, 10); // 2分, 4分, 6分... 最大10分
+    const waitMs = waitMinutes * 60 * 1000;
+
+    console.warn(`\n${'='.repeat(70)}`);
+    console.warn(`⚠️  VERTEX AI (PAID) API RATE LIMIT REACHED`);
+    console.warn(`${'='.repeat(70)}`);
+    console.warn(`Context: ${context}`);
+    console.warn(`Consecutive errors: ${rateLimitState.consecutiveErrors}`);
+    console.warn(`⏰ Auto-retry: Waiting ${waitMinutes} minutes before continuing...`);
+    console.warn(`💡 Processing will automatically resume at ${new Date(Date.now() + waitMs).toLocaleTimeString()}`);
+    console.warn(`${'='.repeat(70)}\n`);
+
+    // 待機
+    await sleep(waitMs);
+
+    // スリープ時間を延長
+    rateLimitState.currentSleepTime = Math.min(
+      rateLimitState.currentSleepTime * 1.5,
+      rateLimitState.maxSleepTime
+    );
+
+    console.log(`🔄 Resuming processing... (Sleep time increased to ${(rateLimitState.currentSleepTime / 1000).toFixed(0)}s)\n`);
+    return false; // 処理を続行
+  }
+
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    let projectId = process.env.VERTEX_AI_PROJECT_ID;
+    if (!projectId) {
+      try {
+        const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        const credentials = JSON.parse(fs.readFileSync(credPath, 'utf8'));
+        projectId = credentials.project_id;
+      } catch (error: any) {}
+    }
+
+    if (projectId) {
+      console.warn(`\n${'='.repeat(70)}`);
+      console.warn(`⚠️  GEMINI FREE API RATE LIMIT REACHED`);
+      console.warn(`${'='.repeat(70)}`);
+      console.warn(`Context: ${context}`);
+      console.warn('🔄 Vertex AI 有料版APIに自動切り替えします...');
+      console.warn(`💰 有料版APIを使用します（pay-per-use）`);
+      console.warn(`${'='.repeat(70)}\n`);
+
+      usingPaidAPI = true;
+      return false; // 処理を続行
+    }
+  }
+
+  console.error(`\n${'='.repeat(70)}`);
+  console.error(`❌ GEMINI FREE API RATE LIMIT REACHED`);
+  console.error('スクリプトを自動停止します。');
+  console.error(`${'='.repeat(70)}\n`);
+  rateLimitReached = true;
+  return true;
+}
+
+// CLI引数解析
+const args = process.argv.slice(2);
+const limit = args.find(a => a.startsWith('--limit='))?.split('=')[1];
+const postId = args.find(a => a.startsWith('--post-id='))?.split('=')[1];
+const postNumFrom = args.find(a => a.startsWith('--from='))?.split('=')[1];
+const postNumTo = args.find(a => a.startsWith('--to='))?.split('=')[1];
+const skipProcessed = args.includes('--skip-processed'); // 処理済みをスキップ
+
+// ログファイルパス
+const LOG_DIR = path.join(__dirname, '../logs');
+const LOG_FILE = path.join(LOG_DIR, `ai-search-${new Date().toISOString().split('T')[0]}.csv`);
+
+interface Post { id: string; source: string; }
+
+/**
+ * CSVログ出力ヘルパー
+ */
+function initLogFile() {
+  if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(LOG_FILE)) {
+    const header = 'timestamp,post_id,source,status,api_type,error,cost_usd\n';
+    fs.writeFileSync(LOG_FILE, header);
+  }
+}
+
+function logToCSV(postId: string, source: string, status: 'success' | 'failed', apiType: string, error: string = '', costUsd: number = 0) {
+  const timestamp = new Date().toISOString();
+  const line = `${timestamp},"${postId}","${source.replace(/"/g, '""')}",${status},${apiType},"${error.replace(/"/g, '""')}",${costUsd}\n`;
+  fs.appendFileSync(LOG_FILE, line);
+}
+
+async function main() {
+  console.log('='.repeat(70));
+  console.log('AI Search Data Generation Script (Full Version)');
+  console.log('='.repeat(70));
+  console.log(`Model: FREE=${GEMINI_MODEL_FREE} → PAID=${GEMINI_MODEL_PAID}`);
+  console.log(`API Mode: FREE (無料版) → PAID (有料版) auto-fallback`);
+  console.log(`Vertex AI: ${process.env.GOOGLE_APPLICATION_CREDENTIALS ? '✅ Configured' : '❌ Not configured'}`);
+  console.log(`Skip Processed: ${skipProcessed ? '✅ Enabled' : '❌ Disabled'}`);
+  console.log(`Log File: ${LOG_FILE}`);
+  console.log('='.repeat(70));
+  console.log('');
+
+  // ログファイル初期化
+  initLogFile();
+
+  // TiDB Cloud SSL対応
+  const isTiDBCloud = process.env.DB_HOST?.includes('tidbcloud.com');
+  const ssl = isTiDBCloud ? { rejectUnauthorized: true } : undefined;
+
+  const pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '4000'),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB || 's13_l2t',
+    ssl: ssl,
+    connectionLimit: 10,
+    waitForConnections: true,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0, // すぐにKeep-Alive開始
+    connectTimeout: 60000,
+    // 長時間処理（6時間超の動画処理）でもタイムアウトしないように設定
+    // idleTimeout: MySQLのwait_timeoutの90%に設定（デフォルト8時間 → 7時間）
+    idleTimeout: 25200000, // 7時間 (25,200秒)
+    maxIdle: 10, // 最大アイドル接続数
+  });
+
+  let success = 0, failed = 0; // グローバルスコープに移動
+
+  try {
+    const conn = await pool.getConnection();
+    try {
+      const posts = await fetchPosts(conn);
+      console.log(`Found ${posts.length} posts to process\n`);
+
+      for (let i = 0; i < posts.length; i++) {
+        if (rateLimitReached) {
+          console.log(`\n⚠️  残り ${posts.length - i} 件のポストをスキップしました`);
+          break;
+        }
+
+        const post = posts[i];
+        console.log(`[${i + 1}/${posts.length}] Processing: ${post.id}`);
+        console.log(`Source: ${post.source}`);
+
+        try {
+          // 各処理で新しい接続を取得
+          const processConn = await pool.getConnection();
+          try {
+            await processPost(processConn, post);
+          } finally {
+            processConn.release();
+          }
+          const apiType = usingPaidAPI ? 'PAID' : 'FREE';
+          console.log(`✅ Success (using ${usingPaidAPI ? 'PAID 💰' : 'FREE 🆓'} API)\n`);
+          success++;
+
+          // ログ記録
+          logToCSV(post.id, post.source, 'success', apiType);
+
+          // 成功時: エラーカウントをリセット、スリープ時間を徐々に短縮
+          rateLimitState.consecutiveErrors = 0;
+          rateLimitState.currentSleepTime = Math.max(
+            rateLimitState.currentSleepTime * 0.9,
+            rateLimitState.baseSleepTime
+          );
+
+          // バッチ処理: 50件ごとに2分休憩
+          if ((i + 1) % 50 === 0 && i + 1 < posts.length) {
+            console.log(`\n${'='.repeat(70)}`);
+            console.log(`📊 Batch checkpoint: ${i + 1}/${posts.length} processed`);
+            console.log(`⏸️  Taking a 2-minute rest to avoid rate limits...`);
+            console.log(`${'='.repeat(70)}\n`);
+            await sleep(120000); // 2分休憩
+          } else {
+            await sleep(rateLimitState.currentSleepTime);
+          }
+        } catch (error: any) {
+          const shouldStop = await handleRateLimitError(error, `Post ${i + 1}/${posts.length}`);
+          if (shouldStop) { failed++; break; }
+
+          if (usingPaidAPI) {
+            console.log(`🔄 Retrying with PAID API...`);
+            try {
+              const retryConn = await pool.getConnection();
+              try {
+                await processPost(retryConn, post);
+              } finally {
+                retryConn.release();
+              }
+              console.log(`✅ Success (using PAID 💰 API)\n`);
+              success++;
+
+              // 成功時リセット
+              rateLimitState.consecutiveErrors = 0;
+              await sleep(rateLimitState.currentSleepTime);
+              continue;
+            } catch (retryError: any) {
+              const isRateLimit = checkRateLimitError(retryError);
+              if (isRateLimit) {
+                // リトライでもレート制限なら再度待機
+                await handleRateLimitError(retryError, `Retry Post ${i + 1}/${posts.length}`);
+                // もう一度リトライ
+                try {
+                  const finalRetryConn = await pool.getConnection();
+                  try {
+                    await processPost(finalRetryConn, post);
+                  } finally {
+                    finalRetryConn.release();
+                  }
+                  console.log(`✅ Success after extended wait (using PAID 💰 API)\n`);
+                  success++;
+                  rateLimitState.consecutiveErrors = 0;
+                  await sleep(rateLimitState.currentSleepTime);
+                  continue;
+                } catch (finalError: any) {
+                  console.error(`❌ Failed after multiple retries: ${finalError.message}\n`);
+                  logToCSV(post.id, post.source, 'failed', 'PAID', finalError.message);
+                  failed++;
+                  continue;
+                }
+              }
+              console.error(`❌ Failed even with PAID API: ${retryError.message}\n`);
+              logToCSV(post.id, post.source, 'failed', 'PAID', retryError.message);
+              failed++;
+              continue;
+            }
+          }
+          console.error(`❌ Failed: ${error.message}\n`);
+          logToCSV(post.id, post.source, 'failed', usingPaidAPI ? 'PAID' : 'FREE', error.message);
+          failed++;
+          await sleep(rateLimitState.currentSleepTime);
+        }
+      }
+
+      console.log('='.repeat(70));
+      console.log(`✅ Success: ${success} | ❌ Failed: ${failed} | 📊 Total: ${posts.length}`);
+      if (rateLimitReached) console.log('⚠️  Status: STOPPED (Rate Limit Reached)');
+
+      // コスト情報を表示
+      if (sessionCost.totalCostUSD > 0) {
+        console.log('');
+        console.log('💰 Cost Summary (Paid API):');
+        console.log(`   Input Tokens:  ${sessionCost.inputTokens.toLocaleString()}`);
+        console.log(`   Output Tokens: ${sessionCost.outputTokens.toLocaleString()}`);
+        console.log(`   Video Seconds: ${sessionCost.videoSeconds.toFixed(1)}s`);
+        console.log(`   Images:        ${sessionCost.images}`);
+        console.log(`   Total Cost:    ${formatCost(sessionCost.totalCostUSD)}`);
+      }
+
+      console.log('='.repeat(70));
+    } finally {
+      conn.release();
+    }
+
+    await pool.end();
+    process.exit(rateLimitReached ? 2 : (failed > 0 ? 1 : 0));
+  } catch (error) {
+    console.error('Fatal error:', error);
+    await pool.end();
+    process.exit(1);
+  }
+}
+
+async function fetchPosts(conn: mysql.Connection): Promise<Post[]> {
+  if (postId) {
+    const [rows] = await conn.query('SELECT id, source FROM posts WHERE id = ?', [postId]);
+    return rows as Post[];
+  }
+
+  let query = `SELECT id, source FROM posts WHERE source IS NOT NULL`;
+
+  // --skip-processed オプション: 処理済みをスキップ
+  if (skipProcessed) {
+    query += ` AND (ai_processed_at IS NULL OR summary IS NULL)`;
+  }
+
+  if (postNumFrom || postNumTo) {
+    const conditions: string[] = [];
+    if (postNumFrom) conditions.push(`post_num >= ${parseInt(postNumFrom)}`);
+    if (postNumTo) conditions.push(`post_num <= ${parseInt(postNumTo)}`);
+    if (conditions.length > 0) query += ` AND (${conditions.join(' AND ')})`;
+  }
+
+  query += ` ORDER BY post_num ASC`;
+  if (limit) query += ` LIMIT ${limit}`;
+
+  const [rows] = await conn.query(query);
+  return rows as Post[];
+}
+
+async function processPost(conn: mysql.Connection, post: Post) {
+  const url = post.source;
+
+  // 既存タグを取得（統合AI処理で使用）
+  const [tagRows] = await conn.query(`SELECT DISTINCT t.name FROM tags t INNER JOIN r_tags rt ON t.id = rt.tag_id WHERE rt.item_type = 'post'`);
+  const existingTags = (tagRows as any[]).map(r => r.name);
+
+  if (isTwitterUrl(url)) {
+    await processTwitter(conn, post.id, url, existingTags);
+  } else if (isYouTubeUrl(url)) {
+    await processYouTube(conn, post.id, url, existingTags);
+  } else {
+    console.log('  ⚠️  Unknown URL type');
+    return;
+  }
+}
+
+async function processTwitter(conn: mysql.Connection, postId: string, url: string, existingTags: string[]) {
+  console.log('  📱 Fetching Twitter data...');
+  const data = await getTwitterFullData(url);
+  if (!data?.text) throw new Error('No Twitter data');
+
+  // 🎯 STEP 1: 全データ収集（Gemini呼び出し前）
+  const media = data.media || [];
+  let allImageAnalysis: string[] = [];
+  let allVideoAnalysis: string[] = [];
+
+  console.log('  📊 Collecting all media analysis...');
+
+  // 画像解析
+  const images = media.filter(m => m.type === 'photo' && m.url);
+  for (const img of images) {
+    try {
+      console.log(`  🖼️  Analyzing image ${images.indexOf(img) + 1}/${images.length}...`);
+      const analysis = await analyzeImageCombined(img.url);
+      if (analysis) allImageAnalysis.push(analysis);
+      await sleep(5000);
+    } catch (err: any) {
+      const shouldStop = await handleRateLimitError(err, 'Image analysis');
+      if (shouldStop) throw err;
+    }
+  }
+
+  // 動画解析（投稿テキストを含める）
+  const videos = media.filter(m => (m.type === 'video' || m.type === 'animated_gif') && m.url);
+  let videoAnalysisFailed = false;
+  let videoAnalysisErrors: string[] = [];
+  let twitterVideoCost = 0;
+  const videoCleanupFunctions: Array<() => Promise<void>> = [];
+  for (const video of videos) {
+    try {
+      console.log(`  🎬 Analyzing video ${videos.indexOf(video) + 1}/${videos.length}...`);
+      const { analysis: videoAnalysis, cost, cleanup } = await analyzeTwitterVideoWithSegmentation(video.url, data.text);
+      twitterVideoCost += cost;
+      if (cleanup) videoCleanupFunctions.push(cleanup);
+      if (videoAnalysis) {
+        allVideoAnalysis.push(videoAnalysis);
+      } else {
+        videoAnalysisFailed = true;
+        videoAnalysisErrors.push(`Video ${videos.indexOf(video) + 1}: returned empty result`);
+      }
+      await sleep(5000);
+    } catch (err: any) {
+      const shouldStop = await handleRateLimitError(err, 'Video analysis');
+      if (shouldStop) throw err;
+      videoAnalysisFailed = true;
+      videoAnalysisErrors.push(`Video ${videos.indexOf(video) + 1}: ${err.message.substring(0, 150)}`);
+    }
+  }
+
+  // Twitter動画解析コストを表示
+  if (twitterVideoCost > 0) {
+    console.log(`     💰 Twitter video analysis cost: ${formatCost(twitterVideoCost)}`);
+  }
+
+  // 🤖 STEP 2: 統合AI処理（1回のGeminiリクエスト）
+  console.log('  🤖 Running unified AI processing...');
+  const aiResult = await processWithUnifiedAI({
+    sourceText: data.text,
+    imageAnalysis: allImageAnalysis.join('\n\n'),
+    videoAnalysis: allVideoAnalysis.join('\n\n'),
+    existingTags: existingTags,
+    mediaType: 'twitter'
+  });
+
+  // 🗄️ STEP 3: データベース保存
+  // 長時間の動画処理後、接続の有効性を確認
+  try {
+    await conn.ping();
+  } catch (pingError: any) {
+    throw new Error(`Database connection lost during processing: ${pingError.message}. Please retry.`);
+  }
+
+  await conn.beginTransaction();
+  try {
+    // Metadata更新（動画解析失敗情報を含める）
+    const metadata: any = {
+      media: 'Twitter',
+      twitter: {
+        user_id: data.user_id,
+        tweet_id: data.tweet_id,
+        date: data.date,
+        has_gif: media.some(m => m.type === 'animated_gif'),
+        has_image: media.some(m => m.type === 'photo'),
+        has_video: media.some(m => m.type === 'video'),
+        media_count: media.length,
+      }
+    };
+
+    // 動画解析失敗時に記録
+    if (videoAnalysisFailed) {
+      metadata.twitter.video_analysis_failed = true;
+      metadata.twitter.video_analysis_errors = videoAnalysisErrors;
+      metadata.twitter.video_analysis_failed_at = new Date().toISOString();
+    }
+
+    await conn.query('UPDATE posts SET metadata = ? WHERE id = ?', [JSON.stringify(metadata), postId]);
+
+    await conn.query('DELETE FROM post_chunks WHERE post_id = ?', [postId]);
+    let idx = 0;
+
+    // 匿名化されたテキストを保存
+    const textChunks = createChunks(aiResult.anonymizedText, 600);
+    for (const chunk of textChunks) {
+      await saveChunk(conn, postId, idx++, chunk, 'Twitter', 'text_content', 'twitter_post');
+    }
+    console.log(`  ✅ Saved ${textChunks.length} text chunks (AI processed)`);
+
+    // 画像解析結果を保存
+    for (const analysis of allImageAnalysis) {
+      const imageChunks = splitIntoChunksWithOverlap(analysis, 600);
+      for (const chunk of imageChunks) {
+        await saveChunk(conn, postId, idx++, chunk, 'Twitter', 'image_analysis', 'twitter_image');
+      }
+    }
+
+    // 動画解析結果を保存
+    for (const analysis of allVideoAnalysis) {
+      const videoChunks = splitIntoChunksWithOverlap(analysis, 600);
+      for (const chunk of videoChunks) {
+        await saveChunk(conn, postId, idx++, chunk, 'Twitter', 'video_analysis', 'twitter_video');
+      }
+    }
+
+    // AI Fieldsを保存
+    await conn.query(
+      `UPDATE posts SET summary = ?, ai_tags = ?, ai_title = ?, user_intent = ?, total_chunks = ?, ai_processed_at = NOW() WHERE id = ?`,
+      [aiResult.summary, JSON.stringify(aiResult.ai_tags), aiResult.ai_title, JSON.stringify(aiResult.user_intent), idx, postId]
+    );
+    console.log(`  ✅ AI fields saved (Title: ${aiResult.ai_title.substring(0, 30)}...)`);
+
+    await conn.commit();
+
+    // 🗑️ すべての処理が成功した後に動画ファイルをクリーンアップ
+    for (const cleanup of videoCleanupFunctions) {
+      try {
+        await cleanup();
+      } catch (e) {
+        console.error(`     ⚠️  Cleanup error: ${e}`);
+      }
+    }
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  }
+}
+
+async function processYouTube(conn: mysql.Connection, postId: string, url: string, existingTags: string[]) {
+  console.log('  🎥 Fetching YouTube data...');
+  const videoIdMatch = url.match(/(?:embed\/|v=|\/)([\w-]{11})/);
+  if (!videoIdMatch) throw new Error('Invalid YouTube URL');
+
+  const videoId = videoIdMatch[1];
+  const resp = await youtube.videos.list({ part: ['snippet', 'statistics', 'contentDetails'], id: [videoId] });
+  if (!resp.data.items?.length) throw new Error('Video not found');
+
+  const video = resp.data.items[0];
+  const snippet = video.snippet!;
+
+  // 動画の長さを計算（秒）
+  const durationStr = video.contentDetails?.duration;
+  let durationSeconds = 0;
+  if (durationStr) {
+    const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    durationSeconds = parseInt(match?.[1] || '0') * 3600 + parseInt(match?.[2] || '0') * 60 + parseInt(match?.[3] || '0');
+  }
+
+  // 🎯 STEP 1: 全データ収集（Gemini呼び出し前）
+  console.log('  📊 Collecting all content...');
+
+  // ソーステキスト
+  const combined = (snippet.title || '') && (snippet.description || '') ? `${snippet.title}\n\n${snippet.description}` : (snippet.title || snippet.description || '');
+
+  // 字幕取得
+  let transcriptText = '';
+  try {
+    console.log('  📝 Fetching transcript...');
+    const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+    if (transcript?.length) {
+      transcriptText = transcript.map((item: any) => item.text).join(' ');
+      console.log(`     📊 Original transcript: ${transcriptText.length} chars`);
+    } else {
+      console.log(`  ⚠️  No transcript available`);
+    }
+  } catch (err: any) {
+    console.log(`  ⚠️  Transcript fetch failed: ${err.message.substring(0, 50)}`);
+  }
+
+  // 動画解析（メタデータなし - 純粋な動画解析のみ）
+  let videoAnalysis = '';
+  let videoAnalysisFailed = false;
+  let videoAnalysisError = '';
+  let videoAnalysisCost = 0;
+  let youtubeVideoCleanup: (() => Promise<void>) | undefined;
+  try {
+    console.log('  🎬 Analyzing YouTube video with Gemini...');
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const { analysis, cost, cleanup } = await analyzeYouTubeVideoByUrl(youtubeUrl, durationSeconds);
+    if (cleanup) youtubeVideoCleanup = cleanup;
+    if (analysis) {
+      videoAnalysis = analysis;
+      videoAnalysisCost = cost;
+      if (usingPaidAPI && cost > 0) {
+        console.log(`     💰 Video analysis cost: ${formatCost(cost)}`);
+      }
+    } else {
+      videoAnalysisFailed = true;
+      videoAnalysisError = 'Video analysis returned empty result';
+    }
+    await sleep(5000);
+  } catch (err: any) {
+    const shouldStop = await handleRateLimitError(err, 'YouTube video analysis');
+    if (shouldStop) throw err;
+    videoAnalysisFailed = true;
+    videoAnalysisError = err.message.substring(0, 200);
+    console.log(`  ⚠️  Video analysis failed: ${err.message.substring(0, 50)}`);
+  }
+
+  // 🤖 STEP 2: 統合AI処理（1回のGeminiリクエスト）
+  console.log('  🤖 Running unified AI processing...');
+  const charLimit = getTranscriptCharLimit(durationSeconds);
+  const aiResult = await processWithUnifiedAI({
+    sourceText: combined,
+    transcript: transcriptText,
+    transcriptCharLimit: charLimit,
+    videoAnalysis: videoAnalysis,
+    existingTags: existingTags,
+    mediaType: 'youtube'
+  });
+
+  // 🗄️ STEP 3: データベース保存
+  // 長時間の動画処理後、接続の有効性を確認
+  try {
+    await conn.ping();
+  } catch (pingError: any) {
+    throw new Error(`Database connection lost during processing: ${pingError.message}. Please retry.`);
+  }
+
+  await conn.beginTransaction();
+  try {
+    // Metadata更新（動画解析失敗情報を含める）
+    const metadata: any = {
+      media: 'YouTube',
+      youtube: {
+        channel_id: snippet.channelId,
+        video_id: videoId,
+        category_id: snippet.categoryId,
+        published_at: snippet.publishedAt,
+        tags: snippet.tags || [],
+        duration: video.contentDetails?.duration,
+      }
+    };
+
+    // 動画解析失敗時に記録
+    if (videoAnalysisFailed) {
+      metadata.youtube.video_analysis_failed = true;
+      metadata.youtube.video_analysis_error = videoAnalysisError;
+      metadata.youtube.video_analysis_failed_at = new Date().toISOString();
+    }
+
+    await conn.query('UPDATE posts SET metadata = ? WHERE id = ?', [JSON.stringify(metadata), postId]);
+
+    await conn.query('DELETE FROM post_chunks WHERE post_id = ?', [postId]);
+    let idx = 0;
+
+    // 匿名化されたテキストを保存
+    const textChunks = createChunks(aiResult.anonymizedText, 600);
+    for (const chunk of textChunks) {
+      await saveChunk(conn, postId, idx++, chunk, 'YouTube', 'text_content', 'youtube_text');
+    }
+    console.log(`  ✅ Saved ${textChunks.length} text chunks (AI processed)`);
+
+    // 処理済み字幕を保存
+    if (aiResult.processedTranscript) {
+      console.log(`     ✅ Processed transcript: ${aiResult.processedTranscript.length} chars`);
+      const transcriptChunks = createChunks(aiResult.processedTranscript, 600);
+      for (const chunk of transcriptChunks) {
+        await saveChunk(conn, postId, idx++, chunk, 'YouTube', 'video_translation', 'youtube_sub');
+      }
+      console.log(`  ✅ Saved ${transcriptChunks.length} transcript chunks (AI processed)`);
+    }
+
+    // 動画解析結果を保存
+    if (videoAnalysis) {
+      const analysisChunks = splitIntoChunksWithOverlap(videoAnalysis, 600);
+      for (const chunk of analysisChunks) {
+        await saveChunk(conn, postId, idx++, chunk, 'YouTube', 'video_analysis', 'youtube_video');
+      }
+      console.log(`  ✅ Saved ${analysisChunks.length} video analysis chunks`);
+    }
+
+    // AI Fieldsを保存
+    await conn.query(
+      `UPDATE posts SET summary = ?, ai_tags = ?, ai_title = ?, user_intent = ?, total_chunks = ?, ai_processed_at = NOW() WHERE id = ?`,
+      [aiResult.summary, JSON.stringify(aiResult.ai_tags), aiResult.ai_title, JSON.stringify(aiResult.user_intent), idx, postId]
+    );
+    console.log(`  ✅ AI fields saved (Title: ${aiResult.ai_title.substring(0, 30)}...)`);
+
+    await conn.commit();
+
+    // 🗑️ すべての処理が成功した後にYouTube動画ファイルをクリーンアップ
+    if (youtubeVideoCleanup) {
+      try {
+        await youtubeVideoCleanup();
+      } catch (e) {
+        console.error(`     ⚠️  Cleanup error: ${e}`);
+      }
+    }
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  }
+}
+
+// generateAIFields関数は削除されました（統合AI処理に置き換え）
+
+async function analyzeImageCombined(imageUrl: string): Promise<string | null> {
+  try {
+    console.log(`     🔧 Using ${usingPaidAPI ? 'PAID 💰 (Vertex AI)' : 'FREE 🆓 (AI Studio)'} API for image analysis`);
+    const axios = (await import('axios')).default;
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 30000 });
+    const imageData = Buffer.from(response.data).toString('base64');
+    const mimeType = response.headers['content-type'] || 'image/jpeg';
+    const model = getGeminiModel();
+
+    const parts = [
+      { inlineData: { mimeType, data: imageData } },
+      { text: `Analyze this image for Live2D/VTuber technical content and return ANONYMIZED text.
+
+REQUIREMENTS:
+1. Perform comprehensive OCR (text extraction) and visual analysis
+2. REMOVE ALL PERSONAL INFORMATION:
+   - Usernames, handles, @mentions → replace with [USER]
+   - Channel names, creator names → replace with [CREATOR]
+   - Email addresses → replace with [EMAIL]
+   - URLs with personal identifiers → anonymize (e.g., twitter.com/username → twitter.com/[USER])
+3. Focus on technical content related to:
+   - Live2D modeling, rigging, animation techniques
+   - VTuber setup, software, hardware
+   - 3D modeling, motion capture
+   - Technical tutorials, tips, workflows
+4. Output in English only
+5. Maximum 2400 characters
+
+Return ONLY the anonymized analysis text. DO NOT include any personal identifiers.` }
+    ];
+
+    const result = await callGenerateContent(model, parts);
+    return getTextFromResponse(result);
+  } catch (error: any) {
+    console.error(`     ⚠️  Image analysis error: ${error.message}`);
+
+    // レート制限エラーの場合は再スロー
+    if (checkRateLimitError(error)) {
+      throw error;
+    }
+
+    // その他のエラーの場合はスキップ
+    return null;
+  }
+}
+
+async function analyzeTwitterVideoWithSegmentation(videoUrl: string, postText: string = ''): Promise<{ analysis: string | null; cost: number; cleanup?: () => Promise<void> }> {
+  const axios = (await import('axios')).default;
+  let tempFilePath: string | null = null;
+  let uploadedFile: any = null;
+  let totalCost = 0;
+
+  try {
+    console.log(`     📥 Downloading Twitter video...`);
+    const response = await axios.get(videoUrl, { responseType: 'arraybuffer', timeout: 60000 });
+    const videoData = Buffer.from(response.data);
+
+    // 🛡️ ファイル形式検証 (マジックバイト検証)
+    const headerStr = videoData.slice(0, 20).toString('utf-8');
+    if (headerStr.includes('#EXTM3U')) {
+      console.warn(`     ⚠️  Video URL points to an HLS playlist (.m3u8), not a video file. Skipping.`);
+      return null;
+    }
+    if (headerStr.toLowerCase().includes('<!doctype') || headerStr.toLowerCase().includes('<html')) {
+      console.warn(`     ⚠️  Download failed (received an HTML error page instead of video). Skipping.`);
+      return null;
+    }
+
+    const isMp4 = videoData.length >= 8 && videoData.slice(4, 8).toString('utf-8') === 'ftyp';
+    const isGif = videoData.length >= 3 && videoData.slice(0, 3).toString('utf-8') === 'GIF';
+    const isWebM = videoData.length >= 4 && videoData.slice(0, 4).toString('hex') === '1a45dfa3';
+
+    if (!isMp4 && !isGif && !isWebM) {
+      console.warn(`     ⚠️  Downloaded file is not a valid video/GIF. Skipping to prevent API errors.`);
+      return null;
+    }
+
+    let detectedMimeType = 'video/mp4';
+    let fileExt = '.mp4';
+    if (isGif) { detectedMimeType = 'image/gif'; fileExt = '.gif'; }
+    if (isWebM) { detectedMimeType = 'video/webm'; fileExt = '.webm'; }
+
+    const tempDir = os.tmpdir();
+    tempFilePath = path.join(tempDir, `twitter_video_${Date.now()}${fileExt}`);
+    fs.writeFileSync(tempFilePath, videoData);
+
+    const fileSizeMB = fs.statSync(tempFilePath).size / (1024 * 1024);
+    console.log(`     ✅ Downloaded: ${fileSizeMB.toFixed(2)} MB (${detectedMimeType})`);
+    
+    const estimatedDuration = 60; // seconds
+
+    if (estimatedDuration <= 180) {
+      console.log(`     📹 Short video mode (≤3 min)`);
+
+      const parts: any[] = [];
+      let gcsUri: string | null = null;
+
+      // 🌟 有料版API使用時はGCSを優先、無料版はFile APIを使用
+      if (usingPaidAPI && storage && gcsBucket) {
+        // GCSにアップロード（有料版API用）
+        gcsUri = await uploadVideoToGCS(tempFilePath!);
+        if (gcsUri) {
+          parts.push({
+            fileData: {
+              mimeType: detectedMimeType,
+              fileUri: gcsUri
+            }
+          });
+        }
+      }
+
+      // GCSアップロード失敗 or 無料版API使用時はFile APIを使用
+      if (!gcsUri) {
+        console.log(`     ☁️  Uploading video to Gemini File API...`);
+        const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+
+        uploadedFile = await fileManager.uploadFile(tempFilePath!, { mimeType: detectedMimeType, displayName: path.basename(tempFilePath!) });
+
+        let file = await fileManager.getFile(uploadedFile.file.name);
+        while (file.state === 'PROCESSING') {
+          await sleep(5000);
+          file = await fileManager.getFile(uploadedFile.file.name);
+        }
+        if (file.state === 'FAILED') throw new Error('File processing failed on Gemini API');
+
+        parts.push({ fileData: { mimeType: uploadedFile.file.mimeType, fileUri: uploadedFile.file.uri } });
+      }
+      
+      // ポストテキストコンテキストを構築
+      const contextInfo = postText ? `
+POST CONTEXT (for reference):
+Post text: ${postText.substring(0, 300)}
+
+Use this context to understand what the video demonstrates and focus your analysis on the specific visual elements shown.
+` : '';
+
+      parts.push({ text: `${contextInfo}Analyze this Twitter video for Live2D/VTuber content and return ANONYMIZED text.
+
+REQUIREMENTS:
+1. Perform COMPREHENSIVE VISUAL ANALYSIS focusing on:
+   - Specific visual elements shown (characters, models, effects, UI, animations)
+   - Demonstrated techniques, workflows, and processes visible in the video
+   - On-screen text overlays, captions, graphics
+   - Motion, rigging, animation demonstrations
+   - Software interfaces and their usage
+   - Step-by-step visual demonstrations
+2. REMOVE ALL PERSONAL INFORMATION:
+   - Usernames, handles, @mentions → replace with [USER]
+   - Channel names, creator names, voice identifiers → replace with [CREATOR]
+   - Email addresses → replace with [EMAIL]
+   - URLs with personal identifiers → anonymize (e.g., twitter.com/username → twitter.com/[USER])
+3. Focus on VISUAL and TECHNICAL content related to:
+   - Live2D modeling, rigging, animation demonstrations (meshes, deformers, parameters)
+   - VTuber setup, software interfaces, hardware
+   - 3D modeling workflows, motion capture sessions
+   - Visual effects, particle systems, shader work
+   - Technical tutorials, tips, techniques shown in video
+4. TIMESTAMP FORMAT (CRITICAL):
+   Use this exact format for each timestamp:
+   MM:SS | [3-7 word title] | [detailed description]
+
+   Examples:
+   00:15 | Mesh Deformer Setup | Demonstrates polygon mesh creation for facial deformers in Live2D Cubism
+   01:30 | Parameter Binding Demo | Shows binding parameters to movement ranges with visual feedback
+   02:45 | Physics Simulation Test | Tests hair and clothing physics with different settings
+
+   Title requirements:
+   - 3-7 words maximum
+   - Action-oriented (e.g., "Setup", "Demo", "Test", "Configuration")
+   - Specific technical terms (e.g., "Mesh Deformer", "Parameter Binding")
+   - NO personal information
+5. Describe WHAT YOU SEE in the video frames, not just generic concepts
+6. Output in English only
+7. Maximum 2400 characters
+
+Return ONLY the anonymized visual analysis text with structured timestamps. DO NOT include any personal identifiers.` });
+
+      // GCS使用時は有料版APIのみ、File API使用時は両方対応
+      console.log(`     🔧 Using ${usingPaidAPI ? 'PAID 💰 (Vertex AI)' : 'FREE 🆓 (AI Studio)'} API for Twitter video analysis`);
+
+      let analysisText: string | null = null;
+      const estimatedDurationSec = 60; // 短尺動画の推定時間
+
+      if (gcsUri && usingPaidAPI) {
+        // GCS URI使用時は有料版APIのみ
+        const model = getGeminiModel();
+        const result = await callGenerateContent(model, parts);
+        totalCost += trackUsageAndCost(result, estimatedDurationSec, 0, '[Twitter Video] ');
+        analysisText = getTextFromResponse(result);
+
+        // クリーンアップ: 処理完了後GCSから削除
+        if (gcsUri) {
+          await deleteVideoFromGCS(gcsUri);
+        }
+      } else if (uploadedFile) {
+        // File API使用時は両方のAPIに対応
+        if (usingPaidAPI) {
+          try {
+            const model = getGeminiModel();
+            const result = await callGenerateContent(model, parts);
+            totalCost += trackUsageAndCost(result, estimatedDurationSec, 0, '[Twitter Video] ');
+            analysisText = getTextFromResponse(result);
+          } catch (paidError: any) {
+            console.warn(`     ⚠️  Paid API failed, falling back to free: ${paidError.message.substring(0, 100)}`);
+          }
+        }
+
+        if (!analysisText) {
+          // デフォルト: 無料版API使用
+          const { GoogleGenerativeAI } = require('@google/generative-ai');
+          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+          const videoModel = genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+
+          const result = await videoModel.generateContent(parts);
+          totalCost += trackUsageAndCost(result, estimatedDurationSec, 0, '[Twitter Video] ');
+          analysisText = typeof result?.response?.text === 'function' ? result.response.text() : '';
+        }
+      }
+
+      // クリーンアップ関数を作成（呼び出し元で実行）
+      const cleanup = async () => {
+        if (tempFilePath && fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+          console.log(`     🗑️  Deleted temporary Twitter video file`);
+        }
+        if (uploadedFile) {
+          const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+          const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+          try {
+            await fileManager.deleteFile(uploadedFile.file.name);
+            console.log(`     🗑️  Deleted uploaded file from Gemini`);
+          } catch(e){}
+        }
+      };
+
+      return { analysis: analysisText, cost: totalCost, cleanup };
+    }
+
+    // 長尺動画の場合
+    const segments = calculateMechanicalSegments(estimatedDuration);
+    if (segments.length === 0) return { analysis: null, cost: totalCost };
+
+    // 🌟 長尺でも常に File API を使用
+    const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+    const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+    uploadedFile = await fileManager.uploadFile(tempFilePath, { mimeType: detectedMimeType, displayName: path.basename(tempFilePath) });
+    let file = await fileManager.getFile(uploadedFile.file.name);
+    while (file.state === 'PROCESSING') { await sleep(5000); file = await fileManager.getFile(uploadedFile.file.name); }
+
+    const allChunks: string[] = [];
+    for (const segment of segments) {
+      const { chunks, cost } = await analyzeTwitterVideoSegment(uploadedFile.file, segment, postText);
+      totalCost += cost;
+      if (chunks && chunks.length > 0) allChunks.push(...chunks);
+      await sleep(5000);
+    }
+
+    // クリーンアップ関数を作成（呼び出し元で実行）
+    const cleanup = async () => {
+      if (tempFilePath && fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+        console.log(`     🗑️  Deleted temporary Twitter video file`);
+      }
+      if (uploadedFile) {
+        const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+        try {
+          await fileManager.deleteFile(uploadedFile.file.name);
+          console.log(`     🗑️  Deleted uploaded file from Gemini`);
+        } catch(e){}
+      }
+    };
+
+    return { analysis: allChunks.join('\n\n'), cost: totalCost, cleanup };
+
+  } catch (error: any) {
+    console.warn(`     ⚠️  Gemini API could not process this media: ${error.message.split('\n')[0]}.`);
+
+    // レート制限エラーの場合は再スロー（クリーンアップせずキャッシュとして保持）
+    if (checkRateLimitError(error)) {
+      console.log(`     💾 Keeping files for retry...`);
+      throw error;
+    }
+
+    // その他のエラーの場合はスキップ（クリーンアップ）
+    console.warn(`     ⚠️  Skipping media analysis.`);
+    if (tempFilePath && fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+    if (uploadedFile) {
+      const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+      const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+      try { await fileManager.deleteFile(uploadedFile.file.name); } catch(e){}
+    }
+    return { analysis: null, cost: totalCost };
+  }
+}
+
+async function analyzeTwitterVideoSegment(uploadedFile: any, segment: ChunkSegment, postText: string = ''): Promise<{ chunks: string[]; cost: number }> {
+  let totalCost = 0;
+  try {
+    const timeRange = `${secondsToTimeString(segment.startTime)} - ${secondsToTimeString(segment.endTime)}`;
+
+    // ポストテキストコンテキストを構築
+    const contextInfo = postText ? `
+POST CONTEXT (for reference):
+Post text: ${postText.substring(0, 300)}
+
+Use this context to focus on the specific visual content and techniques relevant to what is being demonstrated.
+` : '';
+
+    const prompt = `${contextInfo}Analyze the time segment ${timeRange} of this Twitter video for Live2D/VTuber content and return ANONYMIZED text.
+
+REQUIREMENTS:
+1. Focus on VISUAL CONTENT in this specific time segment:
+   - Describe what you SEE on screen (UI, models, effects, animations)
+   - Identify specific techniques, tools, and workflows being shown
+   - Note visual elements like particles, rigging, deformers, meshes
+   - Describe step-by-step visual demonstrations
+2. REMOVE ALL PERSONAL INFORMATION:
+   - Usernames, @mentions → [USER]
+   - Creator names, voices → [CREATOR]
+   - Email addresses → [EMAIL]
+   - URLs with identifiers → anonymize
+3. Extract VISUAL and TECHNICAL content about Live2D/VTuber workflows, software, techniques
+4. TIMESTAMP FORMAT (CRITICAL):
+   Use this exact format:
+   MM:SS | [3-7 word title] | [detailed description]
+
+   Examples:
+   02:15 | Deformer Tool Usage | Adjusts facial mesh deformers for mouth movements
+   03:30 | Expression Preview | Tests different facial expressions in real-time
+
+   Title requirements:
+   - 3-7 words maximum
+   - Action-oriented and specific
+   - Technical terms preferred
+5. Return a JSON object with 4 content chunks:
+{
+  "chunks": [
+    {"content": "MM:SS | Title | description 1"},
+    {"content": "MM:SS | Title | description 2"},
+    {"content": "MM:SS | Title | description 3"},
+    {"content": "MM:SS | Title | description 4"}
+  ]
+}
+
+Output in English only. NO personal identifiers allowed. Describe WHAT YOU SEE.`;
+
+    // videoMetadataでセグメント範囲を指定してコスト削減
+    const parts = [
+      {
+        fileData: {
+          mimeType: uploadedFile.mimeType,
+          fileUri: uploadedFile.uri
+        },
+        videoMetadata: {
+          startOffset: `${segment.startTime}s`,
+          endOffset: `${segment.endTime}s`
+        }
+      },
+      { text: prompt }
+    ];
+
+    // usingPaidAPIフラグに従って使用するAPIを決定
+    console.log(`     🔧 Using ${usingPaidAPI ? 'PAID 💰 (Vertex AI)' : 'FREE 🆓 (AI Studio)'} API for Twitter video segment analysis (File API required)`);
+
+    let responseText = '';
+    const segmentDurationSec = segment.endTime - segment.startTime;
+    const logPrefix = `[Twitter Seg ${segment.index + 1}] `;
+
+    if (usingPaidAPI) {
+      // 有料版APIを試みる
+      try {
+        const model = getGeminiModel();
+        const result = await callGenerateContent(model, parts);
+        totalCost += trackUsageAndCost(result, segmentDurationSec, 0, logPrefix);
+        responseText = getTextFromResponse(result);
+      } catch (paidError: any) {
+        console.warn(`     ⚠️  Paid API failed, falling back to free: ${paidError.message.substring(0, 100)}`);
+        // フォールバック: 無料版を試す
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+        const videoModel = genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+        const result = await videoModel.generateContent(parts);
+        totalCost += trackUsageAndCost(result, segmentDurationSec, 0, logPrefix);
+        responseText = typeof result?.response?.text === 'function' ? result.response.text() : '';
+      }
+    } else {
+      // 無料版API使用
+      const { GoogleGenerativeAI } = require('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+      const videoModel = genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+      const result = await videoModel.generateContent(parts);
+      totalCost += trackUsageAndCost(result, segmentDurationSec, 0, logPrefix);
+      responseText = typeof result?.response?.text === 'function' ? result.response.text() : '';
+    }
+
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) return { chunks: JSON.parse(jsonMatch[0]).chunks?.map((c: any) => c.content) || [responseText], cost: totalCost };
+    } catch (e) {}
+    return { chunks: [responseText], cost: totalCost };
+  } catch (error: any) {
+    console.warn(`     ⚠️  Twitter video segment analysis error: ${error.message.substring(0, 100)}`);
+    return { chunks: [], cost: totalCost };
+  }
+}
+
+async function analyzeYouTubeVideoByUrl(videoUrl: string, duration: number = 0): Promise<{ analysis: string | null; cost: number; cleanup?: () => Promise<void> }> {
+  let tempFilePath: string | null = null;
+  let uploadedFile: any = null;
+  let gcsUri: string | null = null;
+  let totalCost = 0;
+
+  try {
+    // YouTube動画をダウンロード
+    const videoId = videoUrl.match(/(?:embed\/|v=|\/)([\w-]{11})/)?.[1];
+    if (!videoId) throw new Error('Invalid YouTube URL');
+
+    const tempDir = os.tmpdir();
+    tempFilePath = path.join(tempDir, `youtube_video_${videoId}.mp4`); // 固定ファイル名でキャッシュ
+
+    // 既にダウンロード済みかチェック（リトライ時の再ダウンロード防止）
+    if (fs.existsSync(tempFilePath)) {
+      const fileSizeMB = fs.statSync(tempFilePath).size / (1024 * 1024);
+      console.log(`     ♻️  Using cached video: ${fileSizeMB.toFixed(2)} MB`);
+    } else {
+      console.log(`     📥 Downloading YouTube video...`);
+
+      // youtube-dl-execを使用してダウンロード
+      // 360p-720p程度の画質で、ファイルサイズを抑える
+      await youtubedl(videoUrl, {
+        output: tempFilePath,
+        format: 'best[height<=720][ext=mp4]/best[ext=mp4]/best',
+        noPlaylist: true,
+        noWarnings: true,
+        preferFreeFormats: true,
+      });
+
+      if (!fs.existsSync(tempFilePath)) {
+        throw new Error('Video download failed - file not created');
+      }
+
+      const fileSizeMB = fs.statSync(tempFilePath).size / (1024 * 1024);
+      console.log(`     ✅ Downloaded: ${fileSizeMB.toFixed(2)} MB`);
+    }
+
+    // 🌟 有料版API使用時はGCSを優先、無料版はFile APIを使用
+    if (usingPaidAPI && storage && gcsBucket) {
+      // GCSにアップロード（有料版API用）- 固定ファイル名でキャッシュ
+      gcsUri = await uploadVideoToGCS(tempFilePath, `youtube_${videoId}.mp4`);
+      console.log(`     ✅ Video uploaded to GCS successfully`);
+    }
+
+    // GCSアップロード失敗 or 無料版API使用時はFile APIを使用
+    if (!gcsUri) {
+      console.log(`     ☁️  Uploading video to Gemini File API...`);
+      const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+      const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+
+      uploadedFile = await fileManager.uploadFile(tempFilePath, {
+        mimeType: 'video/mp4',
+        displayName: `youtube_${videoId}.mp4`
+      });
+
+      // ファイル処理待機
+      let file = await fileManager.getFile(uploadedFile.file.name);
+      while (file.state === 'PROCESSING') {
+        await sleep(5000);
+        file = await fileManager.getFile(uploadedFile.file.name);
+      }
+      if (file.state === 'FAILED') throw new Error('File processing failed on Gemini API');
+
+      console.log(`     ✅ Video uploaded to File API successfully`);
+    }
+
+    if (duration <= 180) {
+      // 短い動画: 1回で解析
+      const parts: any[] = [];
+
+      // GCS URI or File API URIを使用
+      if (gcsUri) {
+        parts.push({ fileData: { fileUri: gcsUri, mimeType: 'video/mp4' } });
+      } else if (uploadedFile) {
+        parts.push({ fileData: { fileUri: uploadedFile.file.uri, mimeType: 'video/mp4' } });
+      }
+
+      parts.push({ text: `Analyze this YouTube video for Live2D/VTuber content and return ANONYMIZED text.
+
+REQUIREMENTS:
+1. Perform COMPREHENSIVE VISUAL ANALYSIS focusing on:
+   - Specific visual elements shown (characters, models, effects, UI, software interfaces)
+   - Demonstrated techniques, workflows, and processes visible in the video
+   - On-screen text, overlays, captions, and graphics
+   - Motion, animation, rigging demonstrations
+   - Software tools and their usage patterns
+   - Step-by-step visual demonstrations
+2. REMOVE ALL PERSONAL INFORMATION:
+   - Usernames, channel names → replace with [CREATOR]
+   - @mentions, handles → replace with [USER]
+   - Email addresses → replace with [EMAIL]
+   - URLs with personal identifiers → anonymize (e.g., youtube.com/@channel → youtube.com/@[CHANNEL])
+3. Focus on VISUAL and TECHNICAL content related to:
+   - Live2D modeling, rigging, animation techniques (meshes, deformers, parameters, physics)
+   - VTuber setup, software demonstrations, hardware reviews
+   - 3D modeling workflows, motion capture sessions
+   - Visual effects, particle systems, shader work
+   - Character design, expression setup, blendshapes
+   - Technical tutorials, tips, best practices
+4. TIMESTAMP FORMAT (CRITICAL):
+   Use this exact format for each timestamp:
+   MM:SS | [3-7 word title] | [detailed description]
+
+   Examples:
+   00:15 | Live2D Workspace Setup | Opens Live2D Cubism and loads character model file
+   01:30 | Mesh Polygon Creation | Creates facial mesh polygons for deformer rigging
+   02:45 | Parameter Slider Config | Configures parameter sliders for eye movement range
+
+   Title requirements:
+   - 3-7 words maximum
+   - Action-oriented (e.g., "Setup", "Creation", "Configuration", "Demo", "Test")
+   - Specific technical terms (e.g., "Mesh Polygon", "Parameter Slider", "Deformer Rigging")
+   - NO personal information
+5. Describe WHAT YOU SEE in the video frames, not just generic workflows
+6. Output in English only
+7. Maximum 2400 characters
+
+Return ONLY the anonymized visual analysis text with structured timestamps. DO NOT include any personal identifiers.` });
+
+      console.log(`     🔧 Using ${usingPaidAPI ? 'PAID 💰 (Vertex AI)' : 'FREE 🆓 (AI Studio)'} API for YouTube video analysis`);
+
+      let analysisText: string | null = null;
+      const logPrefix = '[YouTube Short] ';
+
+      if (gcsUri && usingPaidAPI) {
+        // GCS URI使用時は有料版APIのみ
+        const model = getGeminiModel();
+        const result = await callGenerateContent(model, parts);
+        totalCost += trackUsageAndCost(result, duration, 0, logPrefix);
+        analysisText = getTextFromResponse(result);
+
+        // クリーンアップ: 処理完了後GCSから削除
+        await deleteVideoFromGCS(gcsUri);
+      } else if (uploadedFile) {
+        // File API使用時は両方のAPIに対応
+        if (usingPaidAPI) {
+          try {
+            const model = getGeminiModel();
+            const result = await callGenerateContent(model, parts);
+            totalCost += trackUsageAndCost(result, duration, 0, logPrefix);
+            analysisText = getTextFromResponse(result);
+          } catch (paidError: any) {
+            console.warn(`     ⚠️  Paid API failed, falling back to free: ${paidError.message.substring(0, 100)}`);
+          }
+        }
+
+        if (!analysisText) {
+          // デフォルト: 無料版API使用
+          const { GoogleGenerativeAI } = require('@google/generative-ai');
+          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+          const videoModel = genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+
+          const result = await videoModel.generateContent(parts);
+          totalCost += trackUsageAndCost(result, duration, 0, logPrefix);
+          analysisText = typeof result?.response?.text === 'function' ? result.response.text() : '';
+        }
+      }
+
+      // クリーンアップ関数を作成（呼び出し元で実行）
+      const cleanup = async () => {
+        if (gcsUri) {
+          await deleteVideoFromGCS(gcsUri);
+        }
+        if (tempFilePath && fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+          console.log(`     🗑️  Deleted temporary YouTube video file`);
+        }
+        if (uploadedFile) {
+          const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+          const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+          try {
+            await fileManager.deleteFile(uploadedFile.file.name);
+            console.log(`     🗑️  Deleted uploaded file from Gemini`);
+          } catch(e){}
+        }
+      };
+
+      return { analysis: analysisText, cost: totalCost, cleanup };
+    }
+
+    // 長い動画: セグメント分割
+    const segments = calculateMechanicalSegments(duration);
+    if (segments.length === 0) return { analysis: null, cost: totalCost };
+
+    const allChunks: string[] = [];
+    for (const segment of segments) {
+      const { chunks, cost } = await analyzeYouTubeVideoSegment(
+        gcsUri || uploadedFile?.file,
+        segment,
+        duration,
+        gcsUri ? 'video/mp4' : uploadedFile?.file.mimeType
+      );
+      totalCost += cost;
+      if (chunks && chunks.length > 0) allChunks.push(...chunks);
+      await sleep(5000);
+    }
+
+    // クリーンアップ関数を作成（呼び出し元で実行）
+    const cleanup = async () => {
+      if (gcsUri) {
+        await deleteVideoFromGCS(gcsUri);
+      }
+      if (tempFilePath && fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+        console.log(`     🗑️  Deleted temporary YouTube video file`);
+      }
+      if (uploadedFile) {
+        const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+        try {
+          await fileManager.deleteFile(uploadedFile.file.name);
+          console.log(`     🗑️  Deleted uploaded file from Gemini`);
+        } catch(e){}
+      }
+    };
+
+    return { analysis: allChunks.join('\n\n'), cost: totalCost, cleanup };
+  } catch (error: any) {
+    console.error(`     ⚠️  YouTube video analysis error: ${error.message}`);
+
+    // レート制限エラーの場合は再スロー（ローカルファイルは削除せずキャッシュとして残す）
+    if (checkRateLimitError(error)) {
+      console.log(`     💾 Keeping downloaded file for retry...`);
+      throw error;
+    }
+
+    // その他のエラーの場合はスキップ（クリーンアップ）
+    if (gcsUri) {
+      await deleteVideoFromGCS(gcsUri);
+    }
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+    if (uploadedFile) {
+      const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+      const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+      try {
+        await fileManager.deleteFile(uploadedFile.file.name);
+      } catch(e){}
+    }
+    return { analysis: null, cost: totalCost };
+  }
+}
+
+async function analyzeYouTubeVideoSegment(
+  fileUriOrObject: string | any,
+  segment: ChunkSegment,
+  totalDuration: number = 0,
+  mimeType: string = 'video/mp4'
+): Promise<{ chunks: string[]; cost: number }> {
+  let segmentCost = 0;
+  try {
+    const timeRange = `${secondsToTimeString(segment.startTime)} - ${secondsToTimeString(segment.endTime)}`;
+    const segmentDuration = segment.endTime - segment.startTime;
+
+    const prompt = `Analyze the time segment ${timeRange} of this YouTube video for Live2D/VTuber content and return ANONYMIZED text.
+
+REQUIREMENTS:
+1. Focus on VISUAL CONTENT in this specific time segment:
+   - Describe what you SEE on screen (UI, models, effects, demonstrations)
+   - Identify specific techniques, tools, and workflows being shown
+   - Note visual elements like particles, rigging, animations, deformers
+   - Describe step-by-step visual demonstrations
+2. REMOVE ALL PERSONAL INFORMATION:
+   - Channel names, creator names → [CREATOR]
+   - Usernames, @mentions → [USER]
+   - Email addresses → [EMAIL]
+   - URLs with identifiers → anonymize
+3. Extract VISUAL and TECHNICAL content about Live2D/VTuber techniques, software, workflows
+4. TIMESTAMP FORMAT (CRITICAL):
+   Use this exact format:
+   MM:SS | [3-7 word title] | [detailed description]
+
+   Examples:
+   05:15 | Rotation Deformer Setup | Configures rotation deformers for head movement
+   06:30 | Physics Parameter Testing | Tests physics parameters on hair with different values
+
+   Title requirements:
+   - 3-7 words maximum
+   - Action-oriented and specific
+   - Technical terms preferred
+5. Return a JSON object with 4 content chunks:
+{
+  "chunks": [
+    {"content": "MM:SS | Title | description 1"},
+    {"content": "MM:SS | Title | description 2"},
+    {"content": "MM:SS | Title | description 3"},
+    {"content": "MM:SS | Title | description 4"}
+  ]
+}
+
+Output in English only. NO personal identifiers allowed. Describe WHAT YOU SEE.`;
+
+    // GCS URI (string) or File API object を判定
+    const isGcsUri = typeof fileUriOrObject === 'string';
+
+    // videoMetadataでセグメント範囲を指定してコスト削減
+    const parts = [
+      {
+        fileData: {
+          mimeType: isGcsUri ? mimeType : fileUriOrObject.mimeType,
+          fileUri: isGcsUri ? fileUriOrObject : fileUriOrObject.uri
+        },
+        videoMetadata: {
+          startOffset: `${segment.startTime}s`,
+          endOffset: `${segment.endTime}s`,
+          // Note: Gemini API may not fully honor very low fps values (e.g., <0.2)
+          // Observed: requesting 0.1111fps often results in ~0.2fps effective sampling
+          ...(segment.samplingFps ? { fps: segment.samplingFps } : {})
+        }
+      },
+      { text: prompt }
+    ];
+
+    console.log(`     🔧 Using ${usingPaidAPI ? 'PAID 💰 (Vertex AI)' : 'FREE 🆓 (AI Studio)'} API for YouTube segment ${segment.index + 1}`);
+
+    let responseText = '';
+    const logPrefix = `[Seg ${segment.index + 1}/${totalDuration ? Math.ceil(totalDuration / (segment.endTime - segment.startTime)) : '?'}] `;
+
+    if (usingPaidAPI) {
+      // 有料版APIを試みる
+      try {
+        const model = getGeminiModel();
+        const result = await callGenerateContent(model, parts, `Segment ${segment.index + 1}`);
+        segmentCost += trackUsageAndCost(result, segmentDuration, 0, logPrefix, segment.samplingFps || 1);
+        responseText = getTextFromResponse(result);
+      } catch (paidError: any) {
+        console.warn(`     ⚠️  Paid API failed, falling back to free: ${paidError.message.substring(0, 100)}`);
+        // フォールバック: 無料版を試す
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+        const videoModel = genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+        const result = await videoModel.generateContent(parts);
+        segmentCost += trackUsageAndCost(result, segmentDuration, 0, logPrefix);
+        responseText = typeof result?.response?.text === 'function' ? result.response.text() : '';
+      }
+    } else {
+      // 無料版API使用
+      const { GoogleGenerativeAI } = require('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+      const videoModel = genAI.getGenerativeModel({ model: GEMINI_MODEL_FREE });
+      const result = await videoModel.generateContent(parts);
+      segmentCost += trackUsageAndCost(result, segmentDuration, 0, logPrefix);
+      responseText = typeof result?.response?.text === 'function' ? result.response.text() : '';
+    }
+
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const chunks = JSON.parse(jsonMatch[0]).chunks?.map((c: any) => c.content) || [responseText];
+        return { chunks, cost: segmentCost };
+      }
+    } catch (e) {}
+    return { chunks: [responseText], cost: segmentCost };
+  } catch (error: any) {
+    console.warn(`     ⚠️  YouTube segment analysis failed: ${error.message.substring(0, 100)}`);
+    return { chunks: [], cost: segmentCost };
+  }
+}
+
+// ==========================================
+// Google Cloud Storage Helper Functions
+// ==========================================
+
+/**
+ * Upload video file to Google Cloud Storage and return GCS URI
+ * @param localFilePath Local file path to upload
+ * @param destinationName Destination file name in GCS (optional, auto-generated if not provided)
+ * @returns GCS URI (gs://bucket-name/file-name) or null if upload failed
+ */
+async function uploadVideoToGCS(localFilePath: string, destinationName?: string): Promise<string | null> {
+  if (!storage || !gcsBucket) {
+    console.log('     ⚠️  GCS not configured, skipping upload');
+    return null;
+  }
+
+  try {
+    const fileName = destinationName || `video_${Date.now()}_${path.basename(localFilePath)}`;
+    const bucket = storage.bucket(gcsBucket);
+    const file = bucket.file(fileName);
+
+    console.log(`     ☁️  Uploading to GCS: ${fileName}...`);
+    await bucket.upload(localFilePath, {
+      destination: fileName,
+      metadata: {
+        contentType: 'video/mp4',
+        metadata: {
+          uploadedAt: new Date().toISOString(),
+          source: 'live2dtree-ai-search'
+        }
+      }
+    });
+
+    const gcsUri = `gs://${gcsBucket}/${fileName}`;
+    console.log(`     ✅ Uploaded to GCS: ${gcsUri}`);
+    return gcsUri;
+  } catch (error: any) {
+    console.error(`     ❌ GCS upload failed: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Delete video file from Google Cloud Storage
+ * @param gcsUri GCS URI (gs://bucket-name/file-name)
+ */
+async function deleteVideoFromGCS(gcsUri: string): Promise<void> {
+  if (!storage || !gcsBucket) return;
+
+  try {
+    // Extract file name from gs://bucket-name/file-name
+    const fileName = gcsUri.replace(`gs://${gcsBucket}/`, '');
+    const bucket = storage.bucket(gcsBucket);
+    await bucket.file(fileName).delete();
+    console.log(`     🗑️  Deleted from GCS: ${fileName}`);
+  } catch (error: any) {
+    console.warn(`     ⚠️  GCS deletion failed: ${error.message}`);
+  }
+}
+
+// ==========================================
+// ユーティリティ関数群
+// ==========================================
+
+/**
+ * タイムスタンプをテキストから抽出する
+ * 対応フォーマット:
+ * - 構造化: MM:SS | Title | Description
+ * - レガシー: MM:SS, HH:MM:SS, [MM:SS], (MM:SS)
+ */
+interface TimestampInfo {
+  timestamp: string;  // 元のタイムスタンプ文字列
+  seconds: number;    // 秒数
+  title: string;      // タイムスタンプ周辺の短いタイトル
+}
+
+function extractTimestamps(text: string): TimestampInfo[] {
+  if (!text) return [];
+
+  const timestamps: TimestampInfo[] = [];
+
+  // 🌟 新フォーマット: MM:SS | Title | Description
+  const structuredRegex = /(\d{1,2}):(\d{2})(?::(\d{2}))?\s*\|\s*([^|]+?)\s*\|/g;
+  let match;
+
+  while ((match = structuredRegex.exec(text)) !== null) {
+    const hours = match[3] ? parseInt(match[1]) : 0;
+    const minutes = match[3] ? parseInt(match[2]) : parseInt(match[1]);
+    const seconds = match[3] ? parseInt(match[3]) : parseInt(match[2]);
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    const title = match[4].trim();
+
+    timestamps.push({
+      timestamp: match[1] + ':' + match[2] + (match[3] ? ':' + match[3] : ''),
+      seconds: totalSeconds,
+      title: title || 'Section'
+    });
+  }
+
+  // 構造化フォーマットが見つかった場合は、それを優先して返す
+  if (timestamps.length > 0) {
+    return timestamps;
+  }
+
+  // 🔄 レガシーフォーマット対応（後方互換性）
+  const legacyRegex = /(?:\[|\()?(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\]|\))?/g;
+
+  while ((match = legacyRegex.exec(text)) !== null) {
+    const hours = match[3] ? parseInt(match[1]) : 0;
+    const minutes = match[3] ? parseInt(match[2]) : parseInt(match[1]);
+    const seconds = match[3] ? parseInt(match[3]) : parseInt(match[2]);
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    // タイムスタンプ後のテキストから短いタイトルを抽出
+    const afterTimestamp = text.substring(match.index + match[0].length).trim();
+    const titleMatch = afterTimestamp.match(/^[\s\-–—:]*([^\n]{1,50})/);
+    let title = titleMatch ? titleMatch[1].trim() : '';
+
+    // タイトルを45文字程度に制限（単語境界で切る）
+    if (title.length > 45) {
+      const truncated = title.substring(0, 45);
+      const lastSpace = truncated.lastIndexOf(' ');
+      title = lastSpace > 35 ? truncated.substring(0, lastSpace) : truncated;
+    }
+
+    timestamps.push({
+      timestamp: match[0],
+      seconds: totalSeconds,
+      title: title || 'Section'
+    });
+  }
+
+  return timestamps;
+}
+
+/**
+ * テキストからタイムスタンプを除去する
+ * - 構造化フォーマット: "MM:SS | Title | " を削除
+ * - レガシーフォーマット: "MM:SS " を削除
+ */
+function removeTimestamps(text: string): string {
+  if (!text) return text;
+
+  // 構造化フォーマットのタイムスタンプとタイトルを削除: "MM:SS | Title | " → ""
+  let cleaned = text.replace(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*\|\s*[^|]+?\s*\|\s*/g, '');
+
+  // レガシーフォーマットのタイムスタンプを削除
+  cleaned = cleaned.replace(/(?:\[|\()?(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\]|\))?\s*/g, '');
+
+  return cleaned;
+}
+
+interface ChunkSegment {
+  index: number;
+  startTime: number;
+  endTime: number;
+  charLimit: number;
+  isFirstChunk: boolean;
+  type: 'mechanical';
+  samplingFps?: number; // サンプリングFPS (1fps / samplingRate)
+}
+
+function calculateMechanicalSegments(durationSeconds: number): ChunkSegment[] {
+  if (durationSeconds <= 180) return [];
+
+  // 🎯 サンプリングレート: Math.max(1, Math.floor(durationSec / 1800)) 秒に1回
+  // 30分(1800秒)なら1秒に1回、3時間(10800秒)なら6秒に1回
+  const samplingRate = Math.max(1, Math.floor(durationSeconds / 1800));
+
+  // サンプリングFPS: 1fps / samplingRate
+  // 例: samplingRate=12 → 1/12 fps ≈ 0.0833 fps (12秒に1フレーム)
+  // Note: Gemini API appears to have a minimum effective fps around 0.2, regardless of requested value
+  // For very long videos, consider using longer segments or startOffset/endOffset without fps parameter
+  const samplingFps = 1 / samplingRate;
+
+  // セグメント長: 30分以下は3分、それ以上は動的に調整
+  const durationMinutes = durationSeconds / 60;
+  let stepMinutes: number;
+
+  if (durationMinutes <= 30) {
+    stepMinutes = 3; // 標準: 3分セグメント
+  } else {
+    // 長尺動画: サンプリングレートに応じてセグメントを拡大
+    stepMinutes = Math.max(3, 3 * samplingRate);
+  }
+
+  const stepSeconds = Math.round(stepMinutes * 60);
+  const totalSegments = Math.ceil(durationSeconds / stepSeconds);
+  const segments: ChunkSegment[] = [];
+
+  console.log(`  📊 Video analysis strategy: ${Math.floor(durationMinutes)}min video, sampling every ${samplingRate}s (${samplingFps.toFixed(4)}fps), ${totalSegments} segments of ${stepMinutes}min each`);
+
+  for (let i = 0; i < totalSegments; i++) {
+    segments.push({
+      index: i,
+      startTime: i * stepSeconds,
+      endTime: Math.min((i + 1) * stepSeconds, durationSeconds),
+      charLimit: 2400,
+      isFirstChunk: i === 0,
+      type: 'mechanical',
+      samplingFps: samplingFps
+    });
+  }
+  return segments;
+}
+function secondsToTimeString(seconds: number): string { return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`; }
+function isTwitterUrl(url: string): boolean { return url.includes('twitter.com') || url.includes('x.com'); }
+function isYouTubeUrl(url: string): boolean { return url.includes('youtube.com') || url.includes('youtu.be'); }
+function sleep(ms: number): Promise<void> { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+async function saveChunk(conn: mysql.Connection, postId: string, index: number, text: string, media: string, source: string, type: string, extra: any = {}) {
+  // タイムスタンプを抽出
+  const timestamps = extractTimestamps(text);
+
+  // テキストからタイムスタンプを除去
+  const cleanedText = removeTimestamps(text);
+
+  // metadataにタイムスタンプ情報を追加
+  const metadata = {
+    media,
+    source,
+    type,
+    ...extra,
+    timestamps: timestamps.length > 0 ? timestamps : undefined
+  };
+
+  await conn.query(
+    `INSERT INTO post_chunks (id, post_id, chunk_index, chunk_text, metadata, chunk_media, chunk_source, chunk_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [uuid.v7(), postId, index, cleanedText, JSON.stringify(metadata), media, source, type]
+  );
+}
+
+function createChunks(text: string, size: number = 600): string[] {
+  if (text.length <= size) return [text];
+  const chunks: string[] = []; let pos = 0;
+  while (pos < text.length) {
+    let end = pos + size;
+    if (end >= text.length) { chunks.push(text.slice(pos).trim()); break; }
+    const search = text.slice(pos, end); const breakChars = ['。', '.', '!', '?', '\n', '、', '，', '；'];
+    let breakPos = -1;
+    for (let i = search.length - 1; i >= Math.max(0, search.length - 100); i--) { if (breakChars.includes(search[i])) { breakPos = pos + i + 1; break; } }
+    if (breakPos === -1) { for (let i = search.length - 1; i >= Math.max(0, search.length - 100); i--) { if (search[i] === ' ') { breakPos = pos + i + 1; break; } } }
+    if (breakPos === -1) breakPos = end;
+    const chunk = text.slice(pos, breakPos).trim(); if (chunk) chunks.push(chunk);
+    pos = breakPos;
+  }
+  return chunks.filter(c => c.length > 0);
+}
+
+function splitIntoChunksWithOverlap(text: string, maxLength: number = 600, overlapLength: number = 75): string[] {
+  if (text.length <= maxLength) return [text];
+  const chunks: string[] = []; let currentPos = 0;
+  while (currentPos < text.length) {
+    let endPos = currentPos + maxLength;
+    if (endPos >= text.length) { chunks.push(text.slice(currentPos).trim()); break; }
+    const searchText = text.slice(currentPos, endPos); const breakChars = ['.', '!', '?', '\n'];
+    let breakPos = -1;
+    for (let i = searchText.length - 1; i >= Math.max(0, searchText.length - 100); i--) { if (breakChars.includes(searchText[i])) { breakPos = currentPos + i + 1; break; } }
+    if (breakPos === -1) { const punctuation = [',', ';', ' ']; for (let i = searchText.length - 1; i >= Math.max(0, searchText.length - 100); i--) { if (punctuation.includes(searchText[i])) { breakPos = currentPos + i + 1; break; } } }
+    if (breakPos === -1) breakPos = endPos;
+    const chunk = text.slice(currentPos, breakPos).trim(); if (chunk) chunks.push(chunk);
+    let overlapStart = breakPos; let sentenceCount = 0;
+    for (let i = breakPos - 1; i >= currentPos && sentenceCount < 2; i--) { if (breakChars.includes(text[i])) { sentenceCount++; if (sentenceCount === 1 || sentenceCount === 2) overlapStart = i + 1; } if (breakPos - i > 100) break; }
+    const overlapSize = breakPos - overlapStart;
+    if (overlapSize >= 50 && overlapSize <= 100) currentPos = overlapStart; else if (overlapSize > 100) currentPos = breakPos - 100; else currentPos = breakPos;
+  }
+  return chunks.filter(c => c.length > 0);
+}
+
+main();

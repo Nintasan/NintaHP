@@ -237,9 +237,8 @@ tr.checked-row td {
 <div id="optionarea">
 </div>
 
-<!-- メールフォーム（通常時に表示、見積確認時は非表示） -->
-<div class="mail-form" style="margin-top: 40px;">
-  
+<!-- 見積用メールフォーム（見積確認時に表示） -->
+<div class="mail-form quotation-mail-form" style="margin-top: 40px; display: none;">
     <h3>見積をメールで送信 / Send Quotation by Email</h3>
     <form id="quotationMailForm">
         <div class="form-group">
@@ -264,6 +263,32 @@ tr.checked-row td {
 
         <button type="submit" class="send-button">送信 / Send</button>
         <div class="success-message" id="successMessage">
+            メールが送信されました！ / Email sent successfully!
+        </div>
+    </form>
+</div>
+
+<!-- 独立したメールフォーム（常に表示） -->
+<div class="mail-form simple-mail-form" style="margin-top: 40px;">
+    <h3>メールを送る / Just send an Email</h3>
+    <form id="simpleMailForm">
+        <div class="form-group">
+            <label for="simpleUserName">お名前 / Your Name <span style="color:red;">*</span></label>
+            <input type="text" id="simpleUserName" name="userName" required>
+        </div>
+
+        <div class="form-group">
+            <label for="simpleUserEmail">メールアドレス / Your Email <span style="color:red;">*</span></label>
+            <input type="email" id="simpleUserEmail" name="userEmail" required>
+        </div>
+
+        <div class="form-group">
+            <label for="simpleMessage">メッセージ / Message</label>
+            <textarea id="simpleMessage" name="message" style="min-height: 100px;" required></textarea>
+        </div>
+
+        <button type="submit" class="send-button">送信 / Send</button>
+        <div class="success-message" id="simpleSuccessMessage">
             メールが送信されました！ / Email sent successfully!
         </div>
     </form>
@@ -335,21 +360,30 @@ tr.checked-row td {
 
 <script>
 $(document).ready(function() {
-    // 見積確認ボタンが押されたら、見積内容を自動入力してメールフォームを非表示
+    // 見積確認ボタンが押されたら、見積内容を自動入力してメールフォームを表示
     $('#optionform').on('submit', function() {
-        // メールフォームを非表示
-        $('.mail-form').hide();
-
         setTimeout(function() {
             // optionareaの内容を取得してquotationContentに設定
             var quotationText = $('#optionarea').text().trim();
             if (quotationText) {
                 $('#quotationContent').val(quotationText);
+                // 見積用メールフォームを表示、独立フォームを非表示
+                $('.quotation-mail-form').fadeIn();
+                $('.simple-mail-form').fadeOut();
             }
         }, 500);
     });
 
-    // メールフォーム送信
+    // 見積を閉じるボタンのイベント（動的に追加される要素に対応）
+    $(document).on('click', '#closeQuotationBtn', function() {
+        // 見積エリアをクリア
+        $('#optionarea').html('');
+        // 見積用メールフォームを非表示、独立フォームを表示
+        $('.quotation-mail-form').fadeOut();
+        $('.simple-mail-form').fadeIn();
+    });
+
+    // 見積用メールフォーム送信
     $('#quotationMailForm').on('submit', function(event) {
         event.preventDefault();
 
@@ -366,7 +400,7 @@ $(document).ready(function() {
             message: $('#message').val()
         };
 
-        var $button = $('.send-button');
+        var $button = $(this).find('.send-button');
         $button.prop('disabled', true);
         $button.text('送信中... / Sending...');
 
@@ -383,6 +417,45 @@ $(document).ready(function() {
             $('#message').val('');
             setTimeout(function() {
                 $('#successMessage').fadeOut();
+            }, 5000);
+        })
+        .fail(function(xhr, status, error) {
+            alert('送信に失敗しました。もう一度お試しください。\nFailed to send. Please try again.');
+            console.error('Error:', error);
+        })
+        .always(function() {
+            $button.prop('disabled', false);
+            $button.text('送信 / Send');
+        });
+    });
+
+    // 独立したメールフォーム送信
+    $('#simpleMailForm').on('submit', function(event) {
+        event.preventDefault();
+
+        var formData = {
+            userName: $('#simpleUserName').val(),
+            userEmail: $('#simpleUserEmail').val(),
+            message: $('#simpleMessage').val()
+        };
+
+        var $button = $(this).find('.send-button');
+        $button.prop('disabled', true);
+        $button.text('送信中... / Sending...');
+
+        $.ajax({
+            type: 'POST',
+            url: '/sendmail',
+            contentType: 'application/json',
+            data: JSON.stringify(formData)
+        })
+        .done(function(response) {
+            $('#simpleSuccessMessage').fadeIn();
+            $('#simpleUserName').val('');
+            $('#simpleUserEmail').val('');
+            $('#simpleMessage').val('');
+            setTimeout(function() {
+                $('#simpleSuccessMessage').fadeOut();
             }, 5000);
         })
         .fail(function(xhr, status, error) {

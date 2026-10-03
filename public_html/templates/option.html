@@ -91,6 +91,26 @@
     margin-top: 20px;
     display: none;
 }
+
+.close-button {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.close-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.6);
+}
 </style>
 
 <div class="quotation-result">
@@ -108,6 +128,7 @@
         {% endfor %}
     </table>
     <h2>合計: {{sumall[0]}} JPY(円) <br> Total : {{sumall[1]}} USD </h2>
+    <button type="button" class="close-button" id="closeQuotationBtn">見積を閉じる / Close Quotation</button>
 </div>
 
 <div class="mail-form">

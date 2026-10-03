@@ -266,3 +266,116 @@ This email was sent automatically from the quotation form.
         import traceback
         traceback.print_exc(file=sys.stderr)
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp_option.route('/sendmail', methods=['POST'])
+def sendmail():
+    import sys
+    try:
+        data = request.get_json()
+        if not data:
+            sys.stderr.write("ERROR: No JSON data received\n")
+            return jsonify({'success': False, 'error': 'No data received'}), 400
+
+        user_name = data.get('userName')
+        user_email = data.get('userEmail')
+        message = data.get('message', '')
+
+        sys.stderr.write(f"Received simple mail request from {user_name} ({user_email})\n")
+
+        # メール本文を作成
+        email_body = f"""
+お問い合わせ / Contact Message
+================================
+
+お名前 / Name: {user_name}
+メールアドレス / Email: {user_email}
+
+メッセージ / Message:
+{message}
+
+================================
+このメールはお問い合わせフォームから自動送信されました。
+This email was sent automatically from the contact form.
+"""
+
+        # MIMEメッセージを作成
+        msg = MIMEMultipart()
+        msg['From'] = user_email
+        msg['To'] = 'ninta.illustration@gmail.com'
+        msg['Subject'] = f'お問い合わせ / Contact from {user_name}'
+        msg['Reply-To'] = user_email
+
+        msg.attach(MIMEText(email_body, 'plain', 'utf-8'))
+
+        # SMTPサーバーに接続してメール送信
+        import os
+
+        # 環境変数でSMTPプロバイダーを選択（gmail または lolipop）
+        smtp_provider = os.environ.get('SMTP_PROVIDER', 'gmail')
+
+        if smtp_provider == 'gmail':
+            # Gmail SMTP設定
+            smtp_server = 'smtp.gmail.com'
+            smtp_port = 587
+            smtp_username = os.environ.get('GMAIL_USERNAME', 'ninta.illustration@gmail.com')
+            smtp_password = os.environ.get('GMAIL_APP_PASSWORD', 'fenr tslp shpl jdqq')  # Gmailアプリパスワード
+            # GmailからGmailに送信
+            msg['From'] = smtp_username
+
+            # パスワードが設定されているか確認
+            if not smtp_password:
+                sys.stderr.write("ERROR: Gmail app password not configured\n")
+        else:
+            # ロリポップサーバーのSMTP設定
+            smtp_server = 'smtp.lolipop.jp'
+            smtp_port = 587
+            smtp_username = 'info@ninta.main.jp'
+            smtp_password = '_69-bwV-1s--ZSaa'
+
+        # デバッグ用：ローカル環境ではメール送信をスキップ
+        host = request.host.split(':')[0]  # ポート番号を除去
+        is_local = (os.environ.get('FLASK_ENV') == 'development' or
+                    host in ['127.0.0.1', 'localhost'] or
+                    '127.0.0.1' in request.host or
+                    'localhost' in request.host)
+
+        # デバッグログは標準エラー出力に
+        sys.stderr.write(f"DEBUG: Host is {request.host}, is_local is {is_local}\n")
+
+        email_sent = False
+        if is_local:
+            # ローカル環境ではログに出力のみ
+            sys.stderr.write("=" * 60 + "\n")
+            sys.stderr.write("DEBUG MODE - Email content (not sent):\n")
+            sys.stderr.write(f"From: {user_email}\n")
+            sys.stderr.write(f"To: ninta.illustration@gmail.com\n")
+            sys.stderr.write(f"Subject: お問い合わせ / Contact from {user_name}\n")
+            sys.stderr.write("-" * 60 + "\n")
+            sys.stderr.write(email_body + "\n")
+            sys.stderr.write("=" * 60 + "\n")
+            email_sent = True
+        else:
+            # 本番環境ではメール送信
+            try:
+                server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+                server.starttls()
+                server.login(smtp_username, smtp_password)
+                server.send_message(msg)
+                server.quit()
+                email_sent = True
+                sys.stderr.write("Email sent successfully via SMTP\n")
+            except Exception as smtp_error:
+                sys.stderr.write(f"SMTP Error: {str(smtp_error)}\n")
+                raise  # エラーを上位に伝える
+
+        return jsonify({
+            'success': True,
+            'message': 'Email sent successfully'
+        })
+
+    except Exception as e:
+        sys.stderr.write(f"Error sending email: {str(e)}\n")
+        import sys
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        return jsonify({'success': False, 'error': str(e)}), 500

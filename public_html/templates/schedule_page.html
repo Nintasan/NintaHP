@@ -315,7 +315,9 @@
 
     function buildScheduleText() {
         const schedules = {{ schedules | tojson }};
-        let text = "📅 Ninta's Streaming Schedule\n\n";
+        let text = "📅 Ninta's Streaming Schedule\n";
+        text += "🔴Channel https://www.youtube.com/@nintaArt\n";
+        text += "✨ Live2D Art & Rigging Streams https://ninta.main.jp/schedule\n\n";
 
         const dayNames = {
             'Sunday': 'Sun',
@@ -346,7 +348,6 @@
             text += `${day}: ${timeStr} - ${title}\n`;
         });
 
-        text += "\n✨ Live2D Art & Rigging Streams";
         return text;
     }
 
